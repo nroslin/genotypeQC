@@ -1,0 +1,36 @@
+######################################################
+# Create a directory where the qc will be done
+######################################################
+
+/hpf/projects/arnold/data/genotypes/<projectname>/qc/v0.X
+
+# and switch to it
+
+################################
+# Create the directory structure
+################################
+if [ ! -d "eo" ]; then
+ mkdir eo
+fi
+
+#######################
+# define some variables
+#######################
+
+scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+
+# this is where the base plink files are to be found, before qc
+dir=../../recoded 
+# prefix is the prefix of the plink files, such as in ${dir}/${prefix}.bed  
+prefix=psy_plate1_5
+
+#######################################
+# run the qc, interactive session
+#######################################
+
+${scriptdir}/qc_1.sh $dir $prefix  > eo/qc_1.o 2>eo/qc_1.e 
+${scriptdir}/qc_2.sh $dir $prefix  > eo/qc_2.o 2>eo/qc_2.e 
+${scriptdir}/qc_3.sh $dir $prefix  > eo/qc_3.o 2>eo/qc_3.e 
+
+
+
