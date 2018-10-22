@@ -1,0 +1,27 @@
+ARGS<- commandArgs( TRUE )
+
+input<- ARGS[1]
+output <-ARGS[2]
+bprange <- as.integer( ARGS[3] )
+
+s<-read.table( input , head=T )
+
+pdf( paste( input , ".pdf", sep=""), height=6, width=12 )
+par( mfrow=c(1,2) )
+
+bp<- boxplot( s$F, range=bprange , plot=F  )
+lo<-  bp$stats[1,1]
+hi<-  bp$stats[5,1] 
+plot(  sort( s$F ) , main="het/F statistic" )
+abline( h= bp$stats[c(1,5),1], lty=3 )
+boxplot( s$F, range=bprange )
+
+sel<- s$F > hi | s$F < lo 
+if( sum( sel ) > 0 ){
+ df<- cbind( s[sel, 1:2 ], SOURCE="HET" )
+ write.table( df, output, quote=F, col=F, row=F, append=T )
+}
+
+dev.off()
+
+
