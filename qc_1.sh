@@ -14,7 +14,9 @@ prefix=$2
 # tmp file prefix. All _$$_tmp_* will be deleted
 tmpfile=_$$_tmp_ 
 # where the scripts called here are located 
-scriptdir=/hpf/projects/arnold/data/genotypes/Redo_-SHA15345_PSYCHIP_PLATE_1-5/qc/v0.1
+scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+
+
 
 
 imissrate=0.03
