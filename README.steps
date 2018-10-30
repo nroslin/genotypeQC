@@ -9,11 +9,11 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit e12e4240eb62aba8a95bd118508ba9b9900f6372
+commit af283a79f86f6a4954f13ef21c173dfb8d668709
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Mon Oct 22 14:24:01 2018 -0400
+Date:   Tue Oct 30 16:15:46 2018 -0400
 
-    added README.steps
+    adding ped to XXX.prcomp.rda so IDs can be found
 
 
 ######################################################
