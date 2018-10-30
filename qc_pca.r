@@ -24,7 +24,8 @@ impute<-function(v){
 gen.imputed<- apply( gen, 2, impute ) 
 
 system.time( pr<- prcomp( t( gen.imputed ), scale.=F, center=T  , retx=F ) )
-save( pr, file=paste( output.prefix,".prcomp.rda", sep="") ) 
+pr.ped<- list( pr, ped )
+save( pr.ped , file=paste( output.prefix,".prcomp.rda", sep="") ) 
 
 
 # logical indicates which are the samples (ie not 1kg)
