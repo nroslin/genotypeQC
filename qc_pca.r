@@ -26,6 +26,8 @@ gen.imputed<- apply( gen, 2, impute )
 system.time( pr<- prcomp( t( gen.imputed ), scale.=F, center=T  , retx=F ) )
 pr.ped<- list( pr, ped )
 save( pr.ped , file=paste( output.prefix,".prcomp.rda", sep="") ) 
+write.table(cbind(  pr.ped[[2]][,1:2], pr.ped[[1]]$rotation[,1:3] ) , file=paste( output.prefix,".prcomp.txt", sep="")  , quote=F, row=F, col=T ) 
+
 
 
 # logical indicates which are the samples (ie not 1kg)
