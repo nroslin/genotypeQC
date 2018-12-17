@@ -56,7 +56,8 @@ plink --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile
 plink --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
 
 
-R --no-save --args ${prefix}.qc_pca.eigenvec  ${tmpfile}_merge.fam  ${prefix}.1kgpca < $scriptdir/qc_pca.r
+mv ${tmpfile}_merge.fam  ${prefix}.qc_pca.fam
+R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca < $scriptdir/qc_pca.r
 
 \rm ${tmpfile}* 
 
