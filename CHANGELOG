@@ -1,0 +1,8 @@
+#######################################################
+v0.2.0 (master)
+Changed pca calulation. Now using eigenstrat. Bug in 
+previous versions that used prcomp, centering and scaling
+of genotypes was not performed as in the eigenstrat 
+paper
+#######################################################
+
