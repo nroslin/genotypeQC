@@ -60,15 +60,27 @@ pch[ is.na( pca$Continent ) ]<-19
 # outliers are circles with X in them  
 pch[samples][ outliers ]<- 13
 
-pdf( paste( output.prefix, ".pcaplot.pdf",sep=""),  width=6, height=18)
-par( mfrow=c(3,1) )
+pdf( paste( output.prefix, ".pcaplot.pdf",sep=""),  width=12, height=18)
+#par( mfrow=c(3,1) )
+layout( matrix( 1:6, nrow=3, byr=F ) ) 
+
 plot( pca[,c("PC1","PC2") ] , col=col, xlab="PC1", ylab="PC2", pch=pch  ) 
 points(  pca[samples ,c("PC1","PC2") ] , col=col[samples], pch=pch[samples]   ) 
 legend( x="bottomleft", legend=c("samples", lev<-levels(pca$Continent) ), pch=19, col=1:(1+length( lev )) )
 plot( pca[,c("PC1","PC3")] , col=col , xlab="PC1", ylab="PC3", pch=pch  ) 
 points(  pca[samples ,c("PC1","PC3")] , col=col[samples], pch=pch[samples]  ) 
-plot( pca[,c("PC2","PC3")] , col=col , xlab="PC2", ylab="PC3") 
+plot( pca[,c("PC2","PC3")] , col=col , xlab="PC2", ylab="PC3", pch=pch ) 
 points(  pca[samples ,c("PC2","PC3") ] , col=col[samples], pch=pch[samples]  ) 
+
+plot( pca[,c("PC1","PC2") ] , col=col, xlab="PC1", ylab="PC2", pch=pch  ) 
+points(  pca[!samples ,c("PC1","PC2") ] , col=col[!samples], pch=pch[!samples]   ) 
+legend( x="bottomleft", legend=c("samples", lev<-levels(pca$Continent) ), pch=19, col=1:(1+length( lev )) )
+plot( pca[,c("PC1","PC3")] , col=col , xlab="PC1", ylab="PC3", pch=pch  ) 
+points(  pca[!samples ,c("PC1","PC3")] , col=col[!samples], pch=pch[!samples]  ) 
+plot( pca[,c("PC2","PC3")] , col=col , xlab="PC2", ylab="PC3",pch=pch ) 
+points(  pca[!samples ,c("PC2","PC3") ] , col=col[!samples], pch=pch[!samples]  ) 
+
+
 dev.off()
 
 
