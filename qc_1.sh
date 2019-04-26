@@ -1,9 +1,9 @@
 #!/bin/bash
 
-module load plink/1.07
+module load plink/1.90b3x
 module load R/3.5.1
 
-alias plink='plink --noweb'
+# alias plink='plink --noweb'
 
 # usage, e.g. ./qc.sh ../../original SHA15345
 # bfiles are expected to be found there:
