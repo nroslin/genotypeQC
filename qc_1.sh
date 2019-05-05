@@ -103,7 +103,7 @@ join -1 2 -2 1 ${tmpfile}.snpnames.sorted   ${tmpfile}.lmiss |\
 
 join -v 2 -1 1 -2 2  ${tmpfile}.bestcallrate   ${tmpfile}.snpnames.sorted   | awk '{print $1,"DUPLICATE"}'  >>  ${prefix}.exclude.txt 
 
-# \rm ${tmpfile}* 
+\rm ${tmpfile}* 
 
 
 
