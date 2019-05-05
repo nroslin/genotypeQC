@@ -1,4 +1,4 @@
-Current version is v0.2.0 (last git tag is v0.1.1)
+Current version is v0.2.1 (last git tag is v0.2.0)
 
 Scripts used here are located in 
 
@@ -10,11 +10,12 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit 4c818da52c06a18cddd6bb8313f0df28959c659b
+commit cdf092152a8f26245c1571a0bb7f27a24c31249f
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Mon Dec 17 11:01:18 2018 -0500
+Date:   Sun May 5 19:43:36 2019 -0400
 
-    changed pca procedure
+    uncommenting rm
+
 
 
 ######################################################
@@ -28,9 +29,9 @@ Date:   Mon Dec 17 11:01:18 2018 -0500
 ################################
 # Create the directory structure
 ################################
-if [ ! -d "eo" ]; then
- mkdir eo
-fi
+
+mkdir -p eo
+
 
 #######################
 # define some variables

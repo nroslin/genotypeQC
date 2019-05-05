@@ -101,6 +101,8 @@ join -1 2 -2 1 ${tmpfile}.snpnames.sorted   ${tmpfile}.lmiss |\
    if($1!=last){ if( NR>1){print best}; smallest=$3; best=$2; last=$1 }
    else { if( $3< smallest ){ best=$2; smallest=$3 } } }' | sort  > ${tmpfile}.bestcallrate 
 
+
+# bug fixed in v0.2.1: used to print $2
 join -v 2 -1 1 -2 2  ${tmpfile}.bestcallrate   ${tmpfile}.snpnames.sorted   | awk '{print $1,"DUPLICATE"}'  >>  ${prefix}.exclude.txt 
 
 \rm ${tmpfile}* 
