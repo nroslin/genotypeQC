@@ -4,9 +4,12 @@ ARGS<- commandArgs( TRUE )
 input<- ARGS[1]
 output <-ARGS[2]
 
-a<-read.table(input , head=T )
+# Found some SNP names containing #: e.g.   HPA#_SNP7  on omni1quad
+a<-read.table(input , head=T , comment.char="" )
 
-a<- a[ a$TEST=="ALL",]
+a<- a[ grep( "ALL", a$TEST),]
+a<- a[ !is.na( a$P ), ] 
+
 
 fdr<- p.adjust( a$P, method="fdr" )
 
