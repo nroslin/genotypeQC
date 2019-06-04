@@ -16,11 +16,8 @@ tmpfile=_$$_tmp_
 # where the scripts called here are located 
 scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
 
-
-
-
-imissrate=0.03
-lmissrate=0.03
+imissrate=$3
+lmissrate=$4
 
 echo FID IID SOURCE > ${prefix}.remove.txt 
 echo SNP SOURCE > ${prefix}.exclude.txt 
