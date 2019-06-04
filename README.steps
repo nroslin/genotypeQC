@@ -10,13 +10,11 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit cdf092152a8f26245c1571a0bb7f27a24c31249f
+commit f254c768e01f288a1984c3876da2baf3a67302e8
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Sun May 5 19:43:36 2019 -0400
+Date:   Tue Jun 4 09:22:47 2019 -0400
 
-    uncommenting rm
-
-
+    first qc_report.sh script
 
 ######################################################
 # Create a directory where the qc will be done
