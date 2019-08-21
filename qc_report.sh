@@ -83,7 +83,10 @@ medianfailedcr=`awk -v m=$lmissrate 'NR>1 && $5>m  {print 1-$5}' ${prefix}_missi
  sort -g | awk -v n=$snpfailcr 'NR>=n/2 {print int( 1000*$1+.5 )/10}' | head -1`
 
 
+
+echo 
 echo "Average SNP call rate: $snpavgcr"
+
 echo 
 echo "Number of SNPs with call rate less than "`echo $lmissrate | awk '{print (1-$1)}'`": $snpfailcr"
 if [ $snpfailcr -gt 0 ]; then 
@@ -91,6 +94,20 @@ if [ $snpfailcr -gt 0 ]; then
                      sort -g | awk -v n=$snpfailcr 'NR>=n/2 {print $1}' | head -1`
  echo " median call rate among them: ${medianfailedcr}"
 fi
+
+# Hardy
+
+noutliers=`wc -l ${prefix}.1kgpca.outliers.txt |awk '{print $1}'`
+nhardy=`grep HWE: ${prefix}.exclude.txt | wc -l | awk '{print $1}'`
+
+echo 
+echo "Number of SNPs that failed HWE at FDR<0.01: $nhardy"
+echo " (calculated after removal of $noutliers outlying samples based on ancestry)" 
+
+
+
+
+
 echo 
 echo "   -----------------"
 echo "3. Sample statistics" 
@@ -111,6 +128,39 @@ if [ $samplefailcr -gt 0 ]; then
                      sort -g | awk -v n=$samplefailcr 'NR>=n/2 {print $1}' | head -1`
  echo " median call rate among them: ${medianfailedcr}"
 fi
+
+
+
+wrongsex=`grep PROBLEM ${prefix}_check-sex.sexcheck | awk '$3!=0 {print}' |wc -l | awk '{print $1}'`
+echo
+echo "Number of samples with wrong sex: $wrongsex"
+
+
+nhet=`awk '$3=="HET" {print}' ${prefix}.remove.txt |wc -l | awk '{print $1}'`
+echo 
+echo "Number of samples with excess/deficit of heterozygosity: $nhet"
+
+
+echo
+echo "   ---------------------------"
+echo "4. Technical exclusion summary"
+echo "   ---------------------------"
+
+
+nsnpsexcl=`expr $snpfailcr + $nhardy`
+
+echo
+echo "Number of SNPs excluded (ignoring duplicates): $nsnpsexcl / $nsnps ("`echo $nsnpsexcl $nsnps | awk '{print int(1000*$1/$2+.5)/10}'`"%)"
+
+
+nsamplesexcl=`expr $samplefailcr + $wrongsex +  $nhet `
+echo 
+echo "Number of samples excluded: $nsamplesexcl / $nsamples ("`echo $nsamplesexcl $nsamples | awk '{print int(1000*$1/$2+.5)/10}'`"%)"
+
+echo
+echo 
+
+
 
 
 
