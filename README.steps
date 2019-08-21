@@ -50,8 +50,9 @@ prefix=psy_plate1_5
 
 imissrate=0.03
 lmissrate=0.03
+hetbprange=6 
 
-${scriptdir}/qc_1.sh $dir $prefix $imissrate $lmissrate> eo/qc_1.o 2>eo/qc_1.e 
+${scriptdir}/qc_1.sh $dir $prefix $imissrate $lmissrate $hetbprange > eo/qc_1.o 2>eo/qc_1.e 
 ${scriptdir}/qc_2.sh $dir $prefix  > eo/qc_2.o 2>eo/qc_2.e 
 ${scriptdir}/qc_3.sh $dir $prefix  > eo/qc_3.o 2>eo/qc_3.e 
 

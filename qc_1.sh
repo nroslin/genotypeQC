@@ -19,6 +19,8 @@ scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
 imissrate=$3
 lmissrate=$4
 
+hetbprange=$5 
+
 echo FID IID SOURCE > ${prefix}.remove.txt 
 echo SNP SOURCE > ${prefix}.exclude.txt 
 
@@ -51,7 +53,7 @@ awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imis
 awk '$1<23 {print $2}' $dir/${prefix}.bim > ${tmpfile}.extract.txt
 plink  --bfile $dir/$prefix --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
 # this excludes samples if F is and outlier wrt boxplot with range=6 
-Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt 6
+Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
 
 #############
 # MARKER QC #
