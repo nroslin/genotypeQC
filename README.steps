@@ -1,4 +1,4 @@
-Current version is v0.2.2 (last git tag is v0.2.1)
+Current version is v0.2.3 (last git tag is v0.2.2)
 
 Scripts used here are located in 
 
@@ -10,11 +10,12 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit f254c768e01f288a1984c3876da2baf3a67302e8
+commit 7780d8297efc719e9ffadbd677f895cc1c8892cc
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Tue Jun 4 09:22:47 2019 -0400
+Date:   Wed Aug 21 16:31:00 2019 +0000
 
-    first qc_report.sh script
+    adding argument for het bp range
+
 
 ######################################################
 # Create a directory where the qc will be done
