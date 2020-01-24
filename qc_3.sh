@@ -25,7 +25,7 @@ lmissrate=0.03
 cat ${prefix}.remove.txt ${prefix}.1kgpca.outliers.txt| sort -u > ${tmpfile}.remove 
 
 
-plink  --bfile $dir/$prefix --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy 
+plink --memory 8000  --bfile $dir/$prefix --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy 
 
 R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
 

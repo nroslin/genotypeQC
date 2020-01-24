@@ -34,26 +34,26 @@ join -1 1 -2 1 ${tmpfile}.bim ${tmpfile}.1kg |\
 # also recoding the SNP name based on chr:pos
 # duplicates should have been flagged in the exclude file 
 
-plink --bfile $dir/$prefix  --extract  ${tmpfile}.common --exclude ${prefix}.exclude.txt  --make-bed --out ${tmpfile}_${prefix} 
+plink --memory 8000 --bfile $dir/$prefix  --extract  ${tmpfile}.common --exclude ${prefix}.exclude.txt  --make-bed --out ${tmpfile}_${prefix} 
 #awk '{$5<$6?al=$5":"$6:al=$6":"$5}{$2=$1":"$4; $3=0}{print}' ${tmpfile}_${prefix}.bim | sed 's/ /\t/g'  > ${tmpfile}.tmp
 #\mv  ${tmpfile}.tmp  ${tmpfile}_${prefix}.bim 
 
 
 # pruning LD 
-plink --bfile  ${tmpfile}_${prefix} --maf 0.05 --indep-pairwise 1500 100 0.1 --out ${tmpfile}_${prefix}
-plink --bfile  ${tmpfile}_${prefix} --extract  ${tmpfile}_${prefix}.prune.in --make-bed --out ${tmpfile}_${prefix}_pruned 
+plink --memory 8000 --bfile  ${tmpfile}_${prefix} --maf 0.05 --indep-pairwise 1500 100 0.1 --out ${tmpfile}_${prefix}
+plink --memory 8000 --bfile  ${tmpfile}_${prefix} --extract  ${tmpfile}_${prefix}.prune.in --make-bed --out ${tmpfile}_${prefix}_pruned 
 
 # extracting in 1kg. recoding snps names first 
 # awk '{$5<$6?al=$5":"$6:al=$6":"$5}{$2=$1":"$4; $3=0}{print}'  $kgdir/indep.bim > ${tmpfile}_indep.bim 
-plink --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
 
-plink --bfile  ${tmpfile}_${prefix} --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}
+plink --memory 8000 --bfile  ${tmpfile}_${prefix} --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}
 
 # first round of flipping 
-plink --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
-plink --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge
 
-plink --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
+plink --memory 8000 --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
 
 
 mv ${tmpfile}_merge.fam  ${prefix}.qc_pca.fam

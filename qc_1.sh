@@ -30,7 +30,7 @@ echo SNP SOURCE > ${prefix}.exclude.txt
 
 ##########
 # sex check
-plink  --bfile $dir/$prefix --check-sex --out ${prefix}_check-sex 
+plink --memory 8000  --bfile $dir/$prefix --check-sex --out ${prefix}_check-sex 
 Rscript $scriptdir/qc_checksex.r ${prefix}_check-sex.sexcheck 
 
 # THIS NEEDS TO BE REFINED. AWAITING SEX INFO
@@ -38,12 +38,12 @@ awk 'NR>1 && $3!=0 && $3!=$4 && $5=="PROBLEM" {print $1,$2,"SEXCHECK"}' ${prefix
 
 ##########
 # missingness
-plink  --bfile $dir/$prefix --missing --out ${prefix}_missing_step1
+plink --memory 8000  --bfile $dir/$prefix --missing --out ${prefix}_missing_step1
 # excluding SNPs with missing rate > 0.03 before calculating imiss
 awk 'NR>1 && ( $5>'$lmissrate' || $4==0 ) {print $2}' ${prefix}_missing_step1.lmiss > ${tmpfile}.exclude.txt
 # not needed
 \rm ${prefix}_missing_step1.imiss
-plink  --bfile $dir/$prefix --missing --exclude ${tmpfile}.exclude.txt --out ${prefix}_missing_step2
+plink --memory 8000  --bfile $dir/$prefix --missing --exclude ${tmpfile}.exclude.txt --out ${prefix}_missing_step2
 # not needed 
 \rm ${prefix}_missing_step2.lmiss
 awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imiss  >> ${prefix}.remove.txt 
@@ -51,7 +51,7 @@ awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imis
 ##########
 # het
 awk '$1<23 {print $2}' $dir/${prefix}.bim > ${tmpfile}.extract.txt
-plink  --bfile $dir/$prefix --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
+plink --memory 8000  --bfile $dir/$prefix --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
 # this excludes samples if F is and outlier wrt boxplot with range=6 
 Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
 
@@ -63,7 +63,7 @@ Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
 ##############
 # missingness
 
-plink  --bfile $dir/$prefix --remove ${prefix}.remove.txt --missing --out ${prefix}_missing_step3
+plink --memory 8000  --bfile $dir/$prefix --remove ${prefix}.remove.txt --missing --out ${prefix}_missing_step3
 # NEEDS UPDATE BASED ON SEX
 awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_step3.lmiss >> ${prefix}.exclude.txt 
 \rm ${prefix}_missing_step3.imiss
