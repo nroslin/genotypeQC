@@ -128,9 +128,6 @@ join -1 2 -2 1 ${tmpfile}.snpnames.sorted   ${tmpfile}.lmiss |\
 # bug fixed in v0.2.1: used to print $2
 join -v 2 -1 1 -2 2  ${tmpfile}.bestcallrate   ${tmpfile}.snpnames.sorted   | awk '{print $1,"DUPLICATE"}'  >>  ${prefix}.exclude.txt 
 
-sort -u  ${prefix}.exclude.txt > ${tmpfile} ; mv ${tmpfile} ${prefix}.exclude.txt
-
-
 \rm ${tmpfile}* 
 
 

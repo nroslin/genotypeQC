@@ -1,3 +1,6 @@
+v0.2.4
+Using males or inferred males (when unavail) to set 
+male hets to missing, and then recalculate missingness
 #######################################################
 v0.2.0 (master)
 Changed pca calulation. Now using eigenstrat. Bug in 

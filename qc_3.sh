@@ -18,14 +18,32 @@ scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
 
 
 
-imissrate=0.03
-lmissrate=0.03
+###########
+# creating a new fam file that includes inferred sex when real sex info is not avail 
+
+awk '{$3==0?sex=$4:sex=$3} NR>1 {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${tmpfile}_update_sex 
+awk '$3==2 {print $1,$2}' ${tmpfile}_update_sex > ${tmpfile}_females 
+
+plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --make-bed --out ${tmpfile}_update_sex --set-hh-missing 
+# 
 
 # outlier file are non-EUR samples (more precisely, outliers wrt pca)
 cat ${prefix}.remove.txt ${prefix}.1kgpca.outliers.txt| sort -u > ${tmpfile}.remove 
 
 
 plink --memory 8000  --bfile $dir/$prefix --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy 
+
+# removing chrX  
+awk '$1!=23 {print}' ${prefix}_hardy.hwe > ${tmpfile}.hwe
+\mv ${tmpfile}.hwe ${prefix}_hardy.hwe 
+
+
+# chrX-specific - females only 
+
+plink --memory 8000  --bfile {$tmpfile}_update_sex  --remove ${tmpfile}.remove --keep ${tmpfile}_females --hardy --out ${tmpfile} --chr 23 
+
+cat ${tmpfile}.hwe >> ${prefix}_hardy.hwe
+
 
 R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
 
