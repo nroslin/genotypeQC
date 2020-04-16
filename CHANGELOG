@@ -1,6 +1,8 @@
 v0.2.4
 Using males or inferred males (when unavail) to set 
 male hets to missing, and then recalculate missingness
+Using only inferred females for chrX hwe. 
+Used to count chr=0 pos=0 as duplicates SNPs
 #######################################################
 v0.2.0 (master)
 Changed pca calulation. Now using eigenstrat. Bug in 

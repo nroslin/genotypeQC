@@ -132,6 +132,16 @@ join -v 2 -1 1 -2 2  ${tmpfile}.bestcallrate   ${tmpfile}.snpnames.sorted   | aw
 sort -u  ${prefix}.exclude.txt > ${tmpfile} ; mv ${tmpfile} ${prefix}.exclude.txt
 
 
+
+########
+# chr0
+awk '$1==0 {print $2,"CHR_0"}' $dir/$prefix.bim >> ${prefix}.exclude.txt
+
+
+
+
+
+
 \rm ${tmpfile}* 
 
 

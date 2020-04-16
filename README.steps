@@ -10,11 +10,12 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit 7780d8297efc719e9ffadbd677f895cc1c8892cc
+commit 7a7e31cbe93944bc75a01f5a01189bb99c0d3a43
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Wed Aug 21 16:31:00 2019 +0000
+Date:   Thu Apr 16 14:27:12 2020 -0400
 
-    adding argument for het bp range
+    bug: chr=0 was included in duplicated SNPs
+
 
 
 ######################################################
