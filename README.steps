@@ -10,11 +10,12 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit 7a7e31cbe93944bc75a01f5a01189bb99c0d3a43
+commit 911c3127c5595ee51c584549889eb02f1b15c23a
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Thu Apr 16 14:27:12 2020 -0400
+Date:   Thu Apr 16 14:31:19 2020 -0400
 
-    bug: chr=0 was included in duplicated SNPs
+    chr:0 now in exclude
+
 
 
 
