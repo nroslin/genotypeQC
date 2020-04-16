@@ -92,15 +92,16 @@ awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_Xmales_st
 
 
 
-
 #################
 # duplicated SNPs
 # ignoring SNPs with 0 allele, as both SNPs may refer to different alleles 
 
 # recoding SNP names with chr:pos:a1:a2 ; alleles are ordered 
 # IGNORING THE ALLELE SINCE THE STRAND MAY BE DIFFERENT -- JUST FOCUSING ON POSITION
+# AS OF v0.2.4 I am not including SNPs with chr==0 among duplicates 
+
 #awk '{$5<$6?al=$5":"$6:al=$6":"$5}{print $1":"$4":"al, $2}' ${tmpfile}_update_sex.bim | sort -k 1,1 > ${tmpfile}.snpnames  
-awk '{$5<$6?al=$5":"$6:al=$6":"$5}{print $1":"$4, $2}' ${tmpfile}_update_sex.bim | sort -k 1,1 > ${tmpfile}.snpnames  
+awk '{$5<$6?al=$5":"$6:al=$6":"$5} $1>0 {print $1":"$4, $2}' ${tmpfile}_update_sex.bim | sort -k 1,1 > ${tmpfile}.snpnames  
 
 
 # extracting SNP names with same pos and alleles 
