@@ -21,7 +21,7 @@ scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
 ###########
 # creating a new fam file that includes inferred sex when real sex info is not avail 
 
-awk '{$3==0?sex=$4:sex=$3} NR>1 {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${tmpfile}_update_sex 
+awk '{$4==0?sex=$3:sex=$4} NR>1 {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${tmpfile}_update_sex 
 awk '$3==2 {print $1,$2}' ${tmpfile}_update_sex > ${tmpfile}_females 
 
 plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --make-bed --out ${tmpfile}_update_sex --set-hh-missing 

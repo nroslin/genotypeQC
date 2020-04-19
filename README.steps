@@ -10,11 +10,11 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit 911c3127c5595ee51c584549889eb02f1b15c23a
+commit 4413dce6882b5bf5cb8e461bfa874b004c5f7755
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Thu Apr 16 14:31:19 2020 -0400
+Date:   Thu Apr 16 14:39:13 2020 -0400
 
-    chr:0 now in exclude
+    minor typo
 
 
 
