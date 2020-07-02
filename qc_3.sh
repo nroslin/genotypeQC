@@ -32,15 +32,15 @@ plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --
 # AS OF v0.1.5 I AM USING CLOSEST 1KG ANCESTRY TO DEFINE GROUPS 
 
 
-n=`wc -l $prefix.closestAncestry.txt | awk '{print $1-1}'`
-groups=`awk 'NR>1 {print $3}' $prefix.closestAncestry.txt | sort -u` 
+n=`wc -l $prefix.1kgpca.closestAncestry.txt | awk '{print $1-1}'`
+groups=`awk 'NR>1 {print $3}' $prefix.1kgpca.closestAncestry.txt | sort -u` 
 
 for g in $groups; do  
 
- nanc=`awk '$3=="'$g'" {print}' $prefix.closestAncestry.txt | wc -l | awk '{print $1}'` 
+ nanc=`awk '$3=="'$g'" {print}' $prefix.1kgpca.closestAncestry.txt | wc -l | awk '{print $1}'` 
  
  if [ $nanc -gt 49 ]; then 
-   awk  '$3!="'$g'" {print $1,$2}' $prefix.closestAncestry.txt  > ${tmpfile}.remove 
+   awk  '$3!="'$g'" {print $1,$2}' $prefix.1kgpca.closestAncestry.txt  > ${tmpfile}.remove 
    plink --memory 8000  --bfile $dir/$prefix  --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy_${g} 
 
   # removing chrX  
