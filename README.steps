@@ -10,11 +10,11 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit db2ae8b3416eae9c2cb3f62e256885c510c21d34
+commit 027256fa31d257e1c3dff80c8ca3f8cdf773be21
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Sun Apr 19 19:44:41 2020 -0400
+Date:   Thu Jul 2 07:40:52 2020 -0400
 
-    changed how sex is used, now based on infered sex or provided sex if 0
+    version change
 
 
 
