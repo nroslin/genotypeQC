@@ -54,7 +54,7 @@ for g in $groups; do
 # BUG IN v0.2.4 THE HEADER WAS APPENDED AS WELL SO R SCRIPT WOULD NOT WORK 
   cat ${tmpfile}.hwe | awk 'NR>1 {print}' >> ${prefix}_hardy_${g}.hwe
 
-  R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
+  R --no-save --args ${prefix}_hardy_${g}.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
 
  fi 
 done 
