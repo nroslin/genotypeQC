@@ -42,7 +42,9 @@ awk '$1!=23 {print}' ${prefix}_hardy.hwe > ${tmpfile}.hwe
 
 plink --memory 8000  --bfile ${tmpfile}_update_sex  --remove ${tmpfile}.remove --keep ${tmpfile}_females --hardy --out ${tmpfile} --chr 23 
 
-cat ${tmpfile}.hwe >> ${prefix}_hardy.hwe
+# BUG IN v0.2.4 THE HEADER WAS APPENDED AS WELL SO R SCRIPT WOULD NOT WORK 
+cat ${tmpfile}.hwe | awk 'NR>1 {print}' >> ${prefix}_hardy.hwe
+
 
 
 R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
