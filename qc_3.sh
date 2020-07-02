@@ -28,26 +28,37 @@ plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --
 # 
 
 # outlier file are non-EUR samples (more precisely, outliers wrt pca)
-cat ${prefix}.remove.txt ${prefix}.1kgpca.outliers.txt| sort -u > ${tmpfile}.remove 
+#cat ${prefix}.remove.txt ${prefix}.1kgpca.outliers.txt| sort -u > ${tmpfile}.remove 
+# AS OF v0.1.5 I AM USING CLOSEST 1KG ANCESTRY TO DEFINE GROUPS 
 
 
-plink --memory 8000  --bfile $dir/$prefix --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy 
+n=`wc -l $prefix.closestAncestry.txt | awk '{print $1-1}'`
+groups=`awk 'NR>1 {print $3}' $prefix.closestAncestry.txt | sort -u` 
 
-# removing chrX  
-awk '$1!=23 {print}' ${prefix}_hardy.hwe > ${tmpfile}.hwe
-\mv ${tmpfile}.hwe ${prefix}_hardy.hwe 
+for g in $groups; do  
 
+ nanc=`awk '$3=="'$g'" {print}' $prefix.closestAncestry.txt | wc -l | awk '{print $1}'` 
+ 
+ if [ $nanc -gt 49 ]; then 
+   awk  '$3!="'$g'" {print $1,$2}' $prefix.closestAncestry.txt  > ${tmpfile}.remove 
+   plink --memory 8000  --bfile $dir/$prefix  --remove ${tmpfile}.remove --hardy --out ${prefix}_hardy_${g} 
 
-# chrX-specific - females only 
+  # removing chrX  
+  awk '$1!=23 {print}' ${prefix}_hardy_${g}.hwe > ${tmpfile}.hwe
+  \mv ${tmpfile}.hwe ${prefix}_hardy_${g}.hwe 
 
-plink --memory 8000  --bfile ${tmpfile}_update_sex  --remove ${tmpfile}.remove --keep ${tmpfile}_females --hardy --out ${tmpfile} --chr 23 
+  # chrX-specific - females only 
+
+  plink --memory 8000  --bfile ${tmpfile}_update_sex  --remove ${tmpfile}.remove --keep ${tmpfile}_females --hardy --out ${tmpfile} --chr 23 
 
 # BUG IN v0.2.4 THE HEADER WAS APPENDED AS WELL SO R SCRIPT WOULD NOT WORK 
-cat ${tmpfile}.hwe | awk 'NR>1 {print}' >> ${prefix}_hardy.hwe
+  cat ${tmpfile}.hwe | awk 'NR>1 {print}' >> ${prefix}_hardy_${g}.hwe
 
+  R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
 
+ fi 
+done 
 
-R --no-save --args ${prefix}_hardy.hwe ${prefix}.exclude.txt  < ${scriptdir}/qc_hwe.r 
 
 
 \rm ${tmpfile}* 

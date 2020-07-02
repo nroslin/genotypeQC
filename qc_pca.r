@@ -85,6 +85,21 @@ dev.off()
 
 
 
+###############
+# distance between samples and 1kg samples. 
+
+sel<-  is.na( pca$Continent )
+di<- as.matrix( dist( pca[,-(1:4)] ) )
+di<- di[sel, !sel]
+
+# take closest 1kg sample
+anc <- pca$Continent[ !sel ]
+closest<- apply( di, 1, which.min ) 
+sample.anc<- anc[ closest ]
+
+write.table( data.frame( FID=pca$FID[sel], IID=pca$IID[sel], closestAncestry= sample.anc ), 
+  paste0(output.prefix,".closestAncestry.txt" ), col=T, row=F, quote=F)
+
 
 
 

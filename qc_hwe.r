@@ -8,8 +8,11 @@ output <-ARGS[2]
 a<-read.table(input , head=T , comment.char="" )
 
 a<- a[ grep( "ALL", a$TEST),]
-a<- a[ !is.na( a$P ), ] 
 
+geno<-do.call( rbind, lapply( strsplit( as.character(a$GENO), "/" ) , function(v){ as.numeric( v )} ) )
+
+
+a<- a[ !is.na( a$P ) &  geno[,1]+ geno[,2] >= 5  , ] 
 
 fdr<- p.adjust( a$P, method="fdr" )
 
@@ -17,11 +20,6 @@ sel<- fdr < 0.01
 label<- paste( "HWE:FDR-LOG10=",-floor( log10( fdr[sel] ) +.5 ),sep="" )
 write.table(data.frame( SNP= a$SNP[sel], SOURCE=label), output,
   quote=F, col=F, row=F, append=T )
-
-
- 
-
-
 
 
 
