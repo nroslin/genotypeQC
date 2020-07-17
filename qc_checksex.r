@@ -40,7 +40,12 @@ s$SNPSEX[1:w][sel]<- 2
 sel<- s$SNPSEX[(w+1):nrow(s)] == 0
 s$SNPSEX[(w+1):nrow(s)][sel]<- 1 
 
+sel<- s$PEDSEX != 0 & s$PEDSEX != s$SNPSEX 
+s$SNPSEX[sel]<- 0 
+
 write.table(s[,c("FID","IID","PEDSEX","SNPSEX")], out.inferred ,col=T,row=F,quote=F )
+
+
 
 
 
