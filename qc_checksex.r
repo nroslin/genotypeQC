@@ -1,6 +1,9 @@
 FILE<- commandArgs( TRUE )
 
+out.inferred <- sub("_check-sex.sexcheck",".inferredsex.txt", FILE) 
+
 s<-read.table(FILE, head=T )
+
 
 s<-s[ order( s$F ),] 
 pdf( paste( FILE, ".pdf", sep=""), height=6, width=18 )
@@ -25,6 +28,22 @@ if( sum(  s$PEDSEX==2  ) > 0 ){
 } else {
  plot.new()
 }
+
+
+# creating a file of infered sex 
+d<- diff( s$F )
+w<- which.max(d)
+sel<- s$SNPSEX[1:w] == 0
+s$SNPSEX[1:w][sel]<- 2 
+
+
+sel<- s$SNPSEX[(w+1):nrow(s)] == 0
+s$SNPSEX[(w+1):nrow(s)][sel]<- 1 
+
+write.table(s[,c("FID","IID","PEDSEX","SNPSEX")], out.inferred ,col=T,row=F,quote=F )
+
+
+
 
 
 

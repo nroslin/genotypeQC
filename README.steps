@@ -1,4 +1,4 @@
-Current version is v0.2.5 (last git tag is v0.2.4)
+Current version is v0.3.0 (last git tag is v0.2.4)
 
 Scripts used here are located in 
 
@@ -10,11 +10,12 @@ and are based on commit
 # cd $scriptdir
 # git log -n 1
 
-commit 027256fa31d257e1c3dff80c8ca3f8cdf773be21
+commit 1bcb40e5cae8d54180d5001603a674393bffbe45
 Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-Date:   Thu Jul 2 07:40:52 2020 -0400
+Date:   Fri Jul 17 11:34:46 2020 -0400
 
-    version change
+    adding sex PROBLEMS to remove file
+
 
 
 

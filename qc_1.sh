@@ -49,14 +49,7 @@ awk '$3==1 {print $1,$2}' ${tmpfile}_update_sex > ${tmpfile}_males
 plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --make-bed --out ${tmpfile}_update_sex --set-hh-missing 
 
 
-awk '{ {$4==0?sex=$3:sex=$4} { $3!=0 && $4!=0 && $3!=$4 ? sex=0 : sex=sex } } NR>1  {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${prefix}.inferredsex.txt 
-
-0 0 
-0 1
-1 0 
-1 2 
-
-
+# awk '{ {$4==0?sex=$3:sex=$4} { $3!=0 && $4!=0 && $3!=$4 ? sex=0 : sex=sex } } NR>1  {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${prefix}.inferredsex.txt 
 
 
 ##########

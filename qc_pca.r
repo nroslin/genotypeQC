@@ -17,11 +17,17 @@ ped<- ped[ order(ped$o), -3 ]
 ped$ID<- paste( ped$FID,ped$IID, sep=":" )
 ped<- ped[ , -(1:2)]
 
+input.val<- sub( "eigenvec","eigenval", input.pca )
+val<- read.table(input.val )
+
 pca<- read.table(input.pca, header=F )
 names( pca )[1:5]<-c("FID","IID", "PC1","PC2","PC3" )
 pca$ID<- paste( pca$FID,pca$IID, sep=":" )
 
+
+
 pca<- merge( ped, pca , by="ID" ) 
+
 
 
 
@@ -89,15 +95,30 @@ dev.off()
 # distance between samples and 1kg samples. 
 
 sel<-  is.na( pca$Continent )
-di<- as.matrix( dist( pca[,-(1:4)] ) )
+# scaling by importance (eigenval) 
+pca.sub<- t( t(pca[,-(1:4)])*val[,1] )
+
+di<- as.matrix( dist( pca.sub[,1:3] ) )
 di<- di[sel, !sel]
 
 # take closest 1kg sample
 anc <- pca$Continent[ !sel ]
+paste0("dist", levels(anc) )
+
 closest<- apply( di, 1, which.min ) 
+closest.di<- format(apply( di, 1, min ),digit=3)
 sample.anc<- anc[ closest ]
 
-write.table( data.frame( FID=pca$FID[sel], IID=pca$IID[sel], closestAncestry= sample.anc ), 
+
+dist.to.group<-format( t(apply( di, 1, function( x ){ aggregate( x, by=list( anc ), mean )[,2] } )), digit=3 )
+
+colnames( dist.to.group )<- paste0("dist", levels(anc) )
+
+
+
+
+
+write.table( data.frame( FID=pca$FID[sel], IID=pca$IID[sel], closestAncestry= sample.anc, closestDistance= closest.di, dist.to.group  ), 
   paste0(output.prefix,".closestAncestry.txt" ), col=T, row=F, quote=F)
 
 
