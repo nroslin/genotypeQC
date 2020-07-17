@@ -35,7 +35,10 @@ Rscript $scriptdir/qc_checksex.r ${prefix}_check-sex.sexcheck
 
 # THIS NEEDS TO BE REFINED. AWAITING SEX INFO 
 # as of v > 0.2.2 this is commented 
-# awk 'NR>1 && $3!=0 && $3!=$4 && $5=="PROBLEM" {print $1,$2,"SEXCHECK"}' ${prefix}_check-sex.sexcheck  >> ${prefix}.remove.txt 
+# as os v0.3.0 this is uncommented 
+awk 'NR>1 && $3!=0 && $3!=$4 && $4!=0 && $5=="PROBLEM" {print $1,$2,"SEXCHECK"}' ${prefix}_check-sex.sexcheck  >> ${prefix}.remove.txt 
+
+
 
 ###########
 # creating a new fam file that includes inferred sex when real sex info is not avail 
