@@ -1,4 +1,4 @@
-#Current version is v0.3.0 (last git tag is v0.2.4)
+#Current version is v0.3.1 (last git tag is v0.3.0)
 
 #Scripts used here are located in 
 
@@ -10,13 +10,11 @@
 # cd $scriptdir
 # git log -n 1
 
-
-
-#commit 82aa2cfac5268f728d2d6c077a411c9e52a1a9ff
+#commit 179e4af633c762b8a936b014cc982736b9a64b93
 #Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-#Date:   Fri Jul 17 13:54:10 2020 -0400
+#Date:   Tue Oct 13 17:01:06 2020 -0400
 
-#    inferred sex file
+#    added link to kgdir data
 
 
 
