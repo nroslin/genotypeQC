@@ -5,6 +5,7 @@ module load R/3.5.1
 alias plink='plink --noweb'
 
 # 1kg plink files provided by TCAG
+# avail at http://www.tcag.ca/tools/1000genomes.html 
 kgdir=/hpf/projects/arnold/references/www.tcag.ca/documents/tools
 
 # bfiles are expected to be found there:
@@ -51,7 +52,7 @@ plink --memory 8000 --bfile  ${tmpfile}_${prefix} --bmerge ${tmpfile}_1kg.bed ${
 
 # first round of flipping 
 plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
-plink --memory 8000 --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge
+plink --memory 8000 --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge --allow-no-sex
 
 plink --memory 8000 --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
 
