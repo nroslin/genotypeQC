@@ -8,6 +8,9 @@ alias plink='plink --noweb'
 # avail at http://www.tcag.ca/tools/1000genomes.html 
 kgdir=/hpf/projects/arnold/references/www.tcag.ca/documents/tools
 
+
+
+
 # bfiles are expected to be found there:
 dir=$1
 # prefix of the bfiles
