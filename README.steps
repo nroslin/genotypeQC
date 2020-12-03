@@ -10,6 +10,12 @@
 # cd $scriptdir
 # git log -n 1
 
+#commit 6fbdf82bdff9f0505696d096ad59e486753cae83
+#Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
+#Date:   Thu Dec 3 13:00:54 2020 -0500
+
+#    dealing with duplicated samples
+
 
 
 ######################################################
