@@ -77,7 +77,7 @@ plink --bfile $dir/$prefix --missing --out ${prefix}.duplicates --keep ${prefix}
 
 dups=`awk '{print $2}' ${prefix}.duplicates.txt | sort -u`
 for d in $dups; do 
- awk '$2=="'$d'" {print}' ${prefix}.duplicates.imiss | sort -k 6,6 -g -r | tail -n +2 | awk '{print $1,$2,"DUPLICATE_HIGHER_MISS"}' >> ${prefix}.remove.txt
+ awk '$2=="'$d'" {print}' ${prefix}.duplicates.imiss | sort -k 6,6 -g | tail -n +2 | awk '{print $1,$2,"DUPLICATE_HIGHER_MISS"}' >> ${prefix}.remove.txt
 done 
 
 
