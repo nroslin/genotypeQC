@@ -10,11 +10,12 @@
 # cd $scriptdir
 # git log -n 1
 
-#commit 6fbdf82bdff9f0505696d096ad59e486753cae83
+#commit 3f906b6b282b63cb6acbbb5bde044e4500a68b15
 #Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-#Date:   Thu Dec 3 13:00:54 2020 -0500
+#Date:   Thu Dec 3 13:05:28 2020 -0500
 
-#    dealing with duplicated samples
+#    sorted in wrong order
+
 
 
 
