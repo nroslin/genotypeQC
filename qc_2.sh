@@ -63,6 +63,28 @@ plink --memory 8000 --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca
 mv ${tmpfile}_merge.fam  ${prefix}.qc_pca.fam
 R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca < $scriptdir/qc_pca.r
 
+
+############## 
+# duplicated samples 
+
+plink --memory 8000 --bfile ${tmpfile}_${prefix}_pruned --genome full --out ${tmpfile}_${prefix}_pruned
+
+awk '$2==$4 && $10< 0.9 {print $1,$2,"FALSE_DUPLICATES\n"$3,$4,"FALSE_DUPLICATES"}' ${tmpfile}_${prefix}_pruned.genome >> ${prefix}.remove.txt 
+
+awk '$2==$4 && $10 > 0.9 {print $1,$2"\n"$3,$4}' ${tmpfile}_${prefix}_pruned.genome > ${prefix}.duplicates.txt 
+
+plink --bfile $dir/$prefix --missing --out ${prefix}.duplicates --keep ${prefix}.duplicates.txt
+
+dups=`awk '{print $2}' ${prefix}.duplicates.txt | sort -u`
+for d in $dups; do 
+ awk '$2=="'$d'" {print}' ${prefix}.duplicates.imiss | sort -k 6,6 -g -r | tail -n +2 | awk '{print $1,$2,"DUPLICATE_HIGHER_MISS"}' >> ${prefix}.remove.txt
+done 
+
+
+
+
+
+
 \rm ${tmpfile}* 
 
 

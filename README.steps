@@ -1,4 +1,4 @@
-#Current version is v0.3.1 (last git tag is v0.3.0)
+#Current version is v0.4.0 (last git tag is v0.3.1)
 
 #Scripts used here are located in 
 
@@ -9,12 +9,6 @@
 # copy the output of 
 # cd $scriptdir
 # git log -n 1
-
-#commit 179e4af633c762b8a936b014cc982736b9a64b93
-#Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-#Date:   Tue Oct 13 17:01:06 2020 -0400
-
-#    added link to kgdir data
 
 
 
@@ -54,10 +48,11 @@ imissrate=0.03
 lmissrate=0.03
 hetbprange=6 
 
+## NEED TO DO MANUAL CHECK FOR DUPLICATE TAG IN REMOVE FILE 
+
 ${scriptdir}/qc_1.sh $dir $prefix $imissrate $lmissrate $hetbprange > eo/qc_1.o 2>eo/qc_1.e 
 ${scriptdir}/qc_2.sh $dir $prefix  > eo/qc_2.o 2>eo/qc_2.e 
 ${scriptdir}/qc_3.sh $dir $prefix  > eo/qc_3.o 2>eo/qc_3.e 
-
 
 
 
