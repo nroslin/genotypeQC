@@ -1,8 +1,8 @@
-#Current version is v0.4.0 (last git tag is v0.3.1)
+#Current version is v0.5.0 (last git tag is v0.4.0)
 
 #Scripts used here are located in 
 
-#scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+#scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/QC/GenotypeArrays
 
 #and are based on commit 
 
@@ -10,12 +10,11 @@
 # cd $scriptdir
 # git log -n 1
 
-#commit 3f906b6b282b63cb6acbbb5bde044e4500a68b15
+#commit 5067880628ee71572a898fa18fc3d088b901afc4
 #Author: Mathieu Lemire <mathieu.lemire@sickkids.ca>
-#Date:   Thu Dec 3 13:05:28 2020 -0500
-
-#    sorted in wrong order
-
+#Date:   Thu Dec 3 13:05:52 2020 -0500
+#
+#    commit in README file
 
 
 
@@ -38,7 +37,7 @@ mkdir -p eo
 # define some variables
 #######################
 
-scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/QC/GenotypeArrays
 
 # this is where the base plink files are to be found, before qc
 dir=../../recoded 
@@ -73,6 +72,7 @@ ${scriptdir}/qc_3.sh $dir $prefix  > eo/qc_3.o 2>eo/qc_3.e
 
 #############################################################################
 #   Copyright 2019 Mathieu Lemire
+#             2022 Nicole Roslin
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.

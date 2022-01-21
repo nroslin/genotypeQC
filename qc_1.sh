@@ -1,11 +1,11 @@
 #!/bin/bash
 
-module load plink/1.90b3x
-module load R/3.5.1
+module load plink/1.9.b3.42
+module load R/3.6.1
+module load bcftools/1.9
 
-# alias plink='plink --noweb'
 
-# usage, e.g. ./qc.sh ../../original SHA15345
+# usage, e.g. ./qc_1.sh ../../original SHA15345
 # bfiles are expected to be found there:
 dir=$1
 # prefix of the bfiles
@@ -14,7 +14,7 @@ prefix=$2
 # tmp file prefix. All _$$_tmp_* will be deleted
 tmpfile=_$$_tmp_ 
 # where the scripts called here are located 
-scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/QC/GenotypeArrays
 
 imissrate=$3
 lmissrate=$4
@@ -29,33 +29,48 @@ echo SNP SOURCE > ${prefix}.exclude.txt
 #############
 
 ##########
-# sex check
-plink --memory 8000  --bfile $dir/$prefix --check-sex --out ${prefix}_check-sex 
-Rscript $scriptdir/qc_checksex.r ${prefix}_check-sex.sexcheck 
+# sex check in PLINK sucks, so do it more manually
+#use bcftools to count heterozygous calls on X and number of calls Y
+plink --memory 8000 --bfile $dir/$prefix --chr 23 --recode vcf --out _$$_tmp_c23
+bcftools +smpl-stats _$$_tmp_c23.vcf > _$$_tmp_c23.bcfout
+plink --memory 8000 --file $dir/$prefix --chr 24 --recode vcf --out _$$_tmp_c24
+bcftools +smpl-stats _$$_tmp_c24.vcf > _$$_tmp_c24.bcfout
+
+#format of bcftools output is awkward to read into R, so format using perl
+qc_sexCheck.pl _$$_tmp $dir $prefix
+  #makes $prefix_sexCheck.txt (file with counts and stats, no inference)
+
+#make some plots and do inference
+R --no-save --args $prefix < qc_sexCheck.r > qc_sexCheck.log
+  #makes $prefix_inferredSex.txt, prefix_sexCheck.pdf
+
+#problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
+#inferred sex
+sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SexCheck"}' >> $prefix.remove.txt
 
 # THIS NEEDS TO BE REFINED. AWAITING SEX INFO 
 # as of v > 0.2.2 this is commented 
 # as os v0.3.0 this is uncommented 
-awk 'NR>1 && $3!=0 && $3!=$4 && $4!=0 && $5=="PROBLEM" {print $1,$2,"SEXCHECK"}' ${prefix}_check-sex.sexcheck  >> ${prefix}.remove.txt 
+#awk 'NR>1 && $3!=0 && $3!=$4 && $4!=0 && $5=="PROBLEM" {print $1,$2,"SEXCHECK"}' ${prefix}_check-sex.sexcheck  >> ${prefix}.remove.txt 
 
 
 
 ###########
 # creating a new fam file that includes inferred sex when real sex info is not avail 
+#also, set any hh genotypes to missing (in inferred males)
 
-awk '{$4==0?sex=$3:sex=$4} NR>1 {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${tmpfile}_update_sex 
+awk '{$3==0?sex=$4:sex=$3} NR>1 {print $1,$2,sex}'    ${prefix}_inferredSex.txt > ${tmpfile}_update_sex 
 awk '$3==1 {print $1,$2}' ${tmpfile}_update_sex > ${tmpfile}_males 
 
 plink --memory 8000  --bfile $dir/$prefix --update-sex ${tmpfile}_update_sex  --make-bed --out ${tmpfile}_update_sex --set-hh-missing 
 
 
-# awk '{ {$4==0?sex=$3:sex=$4} { $3!=0 && $4!=0 && $3!=$4 ? sex=0 : sex=sex } } NR>1  {print $1,$2,sex}'    ${prefix}_check-sex.sexcheck > ${prefix}.inferredsex.txt 
 
 
 ##########
 # missingness
 plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --out ${prefix}_missing_step1
-# excluding SNPs with missing rate > 0.03 before calculating imiss
+# excluding SNPs with missing rate > $lmissrate before calculating imiss
 awk 'NR>1 && ( $5>'$lmissrate' || $4==0 ) {print $2}' ${prefix}_missing_step1.lmiss > ${tmpfile}.exclude.txt
 
 # focusing missingness on males only and chrX this is new as of v0.2.4 
