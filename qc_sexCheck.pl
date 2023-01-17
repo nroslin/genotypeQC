@@ -3,14 +3,13 @@
 use strict;
 
 # Created 20 January 2022.
-# Last modified:  21 Jan 2022
+# Last modified:  12 Jan 2023
 
 # Read in output of bcftools for chr X and Y data.  Super annoying to try in R.
 
 my $inchrx = "$ARGV[0]_c23.bcfout";   #chrX, output of bcftools
-my $inchry = "$ARGV[0]_c24.bcfout";   #chrY, output from bcftoos
+my $inchry = "$ARGV[0]_c24.imiss";   #chrY missingness from PLINK
 my $inped = "$ARGV[1]/$ARGV[2].fam";   #ped file with gender info
-my $inlog = "$ARGV[0]_c24.log";   #PLINK log file when created chrY vcf file
 my $output = "$ARGV[2]_sexCheck.txt";
 my ( %datahash, $ynsnp );
 
@@ -30,27 +29,18 @@ while (<CX>) {
 }
 close CX;
 
-#chr Y:  need call rate, so start with total number of SNPs
-open LOG, "$inlog" or die "Cannot open file $inlog:  $!";
-while (<LOG>) {
-  chomp;
-  next unless /pass/;   #<blank> variants and <blank> people pass filters...
-  $ynsnp = (split)[0];
-}
-close LOG;
 
 #chr Y, get call rate
-#ID here is FID_IID
+#also need to attach FID so will match bcftools output
 open CY, "$inchry" or die "Cannnot open file $inchry:  $!";
 while (<CY>) {
   chomp;
-  next if /^#/;
-  next if /^CMD/;
-  next if /^DEF/;
-  next if /^SITE0/;
-  my ( $yid, $yosnp ) = (split)[1,2];  #observed count
-  my $ycr = sprintf "%.4f", $yosnp / $ynsnp;
-  $datahash{$yid} = join "\t", $datahash{$yid}, $ynsnp, $yosnp, $ycr;
+  next if /FID/;
+  my ( $fid, $yid, $ynmiss, $ynsnp, $fmiss ) = (split)[0,1,3,4,5];
+  my $sample = join "_", $fid, $yid;
+  my $yosnp = $ynsnp - $ynmiss;   #number of non-missing genotypes
+  my $ycr = sprintf "%.4f", 1 - $fmiss;   #call rate
+  $datahash{$sample} = join "\t", $datahash{$sample}, $ynsnp, $yosnp, $ycr;
 }
 close CY;
 

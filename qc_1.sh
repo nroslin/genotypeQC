@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load plink/1.9.b3.42
+module load plink/1.90b6.21
 module load R/3.6.1
 module load bcftools/1.9
 
@@ -31,18 +31,24 @@ echo SNP SOURCE > ${prefix}.exclude.txt
 ##########
 # sex check in PLINK sucks, so do it more manually
 #use bcftools to count heterozygous calls on X and number of calls Y
-plink --memory 8000 --bfile $dir/$prefix --chr 23 --recode vcf --out _$$_tmp_c23
+#note that PLINK will give warning about non-valid alleles; these are D/I
+plink --memory 8000 --bfile $dir/$prefix --chr 23 --recode vcf --snps-only --out _$$_tmp_c23
 bcftools +smpl-stats _$$_tmp_c23.vcf > _$$_tmp_c23.bcfout
-plink --memory 8000 --file $dir/$prefix --chr 24 --recode vcf --out _$$_tmp_c24
-bcftools +smpl-stats _$$_tmp_c24.vcf > _$$_tmp_c24.bcfout
+
+#change chr Y chromosome code to autosome and calculate missing rate
+#otherwise, females will always show no calls
+#also, if change sex to missing will produce no results
+plink --memory 8000 --bfile $dir/$prefix --chr 24 --make-bed --out _$$_tmp_c24
+sed 's/^24/2/' _$$_tmp_c24.bim > _$$_tmp_c24new.bim
+plink --memory 8000 --bfile _$$_tmp_c24 --bim _$$_tmp_c24new.bim --missing --out _$$_tmp_c24
 
 #format of bcftools output is awkward to read into R, so format using perl
-qc_sexCheck.pl _$$_tmp $dir $prefix
+$scriptdir/qc_sexCheck.pl _$$_tmp $dir $prefix
   #makes $prefix_sexCheck.txt (file with counts and stats, no inference)
 
 #make some plots and do inference
-R --no-save --args $prefix < qc_sexCheck.r > qc_sexCheck.log
-  #makes $prefix_inferredSex.txt, prefix_sexCheck.pdf
+R --no-save --args $prefix < $scriptdir/qc_sexCheck.r > qc_sexCheck.log
+  #makes $prefix_inferredSex.txt, $prefix_sexCheck.pdf
 
 #problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
 #inferred sex
@@ -57,7 +63,7 @@ sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1
 
 ###########
 # creating a new fam file that includes inferred sex when real sex info is not avail 
-#also, set any hh genotypes to missing (in inferred males)
+#also, set any hh genotypes to missing in inferred males
 
 awk '{$3==0?sex=$4:sex=$3} NR>1 {print $1,$2,sex}'    ${prefix}_inferredSex.txt > ${tmpfile}_update_sex 
 awk '$3==1 {print $1,$2}' ${tmpfile}_update_sex > ${tmpfile}_males 
@@ -73,13 +79,16 @@ plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --out ${prefix}_mis
 # excluding SNPs with missing rate > $lmissrate before calculating imiss
 awk 'NR>1 && ( $5>'$lmissrate' || $4==0 ) {print $2}' ${prefix}_missing_step1.lmiss > ${tmpfile}.exclude.txt
 
-# focusing missingness on males only and chrX this is new as of v0.2.4 
+#find vars in males only on chrX with high missing rate (poorly typed or a lot
+#of hh, maybe pseudoautosomal region)
+#this is new as of v0.2.4 
 plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --chr 23 --out ${prefix}_missing_Xmales --keep ${tmpfile}_males
 awk 'NR>1 && ( $5>'$lmissrate' || $4==0 ) {print $2}' ${prefix}_missing_Xmales.lmiss >> ${tmpfile}.exclude.txt
 
 
 # this file not needed
 \rm ${prefix}_missing_step1.imiss
+#remove these X chrom vars before calculating missing rate per sample
 plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --exclude ${tmpfile}.exclude.txt --out ${prefix}_missing_step2
 # this file  not needed 
 \rm ${prefix}_missing_step2.lmiss
@@ -90,7 +99,7 @@ awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imis
 # het
 awk '$1<23 {print $2}' $dir/${prefix}.bim > ${tmpfile}.extract.txt
 plink --memory 8000  --bfile ${tmpfile}_update_sex --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
-# this excludes samples if F is and outlier wrt boxplot with range=6 
+# this excludes samples if F is and outlier wrt boxplot with range=$hetbprange
 Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
 
 #############
@@ -184,6 +193,7 @@ awk '$1==0 {print $2,"CHR_0"}' $dir/$prefix.bim >> ${prefix}.exclude.txt
 
 #############################################################################
 #   Copyright 2019 Mathieu Lemire
+#             2022 Nicole M. Roslin
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.

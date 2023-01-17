@@ -1,18 +1,19 @@
 # Created 20 January 2022.
-# Last modified:  21 Jan 2022
+# Last modified:  16 Jan 2023
 
 # Make some plots and do some sex inference.
 
 infile<-commandArgs(trailingOnly=T)
 outfile<-paste0(infile, "_inferredSex.txt")
 
-x<-read.table(paste0(infile, "_sexCheck.txt"), header=T)
+x<-read.table(paste0(infile, "_sexCheck.txt"), header=T, as.is=T)
 
 #make some plots
-pdf(paste0(infile, "_sexCheck.pdf"), height=12, width=18)
+pdf(paste0(infile, "_sexCheck.pdf"), height=10, width=15)
+plot(x$ChrXhetRate, x$ChrYcr, main=paste(infile, "All samples"), pch=x$PedSex+1, 
+  col=x$PedSex+1, xlab="ChrX heterozygosity", ylab="ChrY call rate")
 par(mfcol=c(2,3))
 
-#plot(x$ChrXhetRate, x$ChrYcr, main="All")
 pu<-x[x$PedSex==0,]
 pm<-x[x$PedSex==1,]
 pf<-x[x$PedSex==2,]
