@@ -1,8 +1,8 @@
 #!/bin/bash
-module load plink/1.90b3x
+module load plink/1.90b6.21
 module load R/3.5.1
 
-alias plink='plink --noweb'
+#alias plink='plink --noweb'
 
 # 1kg plink files provided by TCAG
 # avail at http://www.tcag.ca/tools/1000genomes.html 
@@ -19,7 +19,7 @@ prefix=$2
 # tmp file prefix. All _$$_tmp_* will be deleted
 tmpfile=_$$_tmp_ 
 # where the scripts called here are located 
-scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/Genotypes/qc
 
 
 

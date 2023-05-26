@@ -3,7 +3,7 @@
 use strict;
 
 # Created 20 January 2022.
-# Last modified:  25 Jan 2023
+# Last modified:  25 May 2023
 
 # Read in output of bcftools for chr X and Y data.  Super annoying to try in R.
 
@@ -68,6 +68,7 @@ if ( -e $incrx ) {
 
 #chrY het
 #id here is FID_IID
+if ( -e $inhety ) {
 open YHET, "$inhety" or die "Cannot open file $inhety:  $!";
 while (<YHET>) {
   chomp;
@@ -85,10 +86,11 @@ while (<YHET>) {
   $datahash{$yhetid} = join "\t", $datahash{$yhetid}, $yhet;
 }
 close YHET;
+}
 
 
 #print everything out
-### assume that if have both or none of chrX call rate and chrY het
+### assume that have both or none of chrX call rate and chrY het
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
 print OUT "FID\tIID\tPedSex\tChrXnSNP\tChrXnHet\tChrXhetRate\tChrYnSNP\tChrYnCalled\tChrYcr\tChrXcr\tChrYhet\n";
 
@@ -98,7 +100,7 @@ while (<PED>) {
   my ( $fid, $iid, $sex ) = (split)[0,1,4];
   my $label = join "_", $fid, $iid;
 ### add NA if X chr call rate file not present
-  my @array = split $datahash{$label};
+  my @array = split /\t/, $datahash{$label};
   if ( scalar @array == 6 ) {   #if no chrX call rate or chrY het
 	print OUT "$fid\t$iid\t$sex\t$datahash{$label}\tNA\tNA\n";
   }

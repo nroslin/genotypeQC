@@ -6,8 +6,8 @@ bprange <- as.integer( ARGS[3] )
 
 s<-read.table( input , head=T )
 
-pdf( paste( input , ".pdf", sep=""), height=6, width=12 )
-par( mfrow=c(1,2) )
+pdf( paste( input , ".pdf", sep=""), height=6, width=18 )
+par( mfrow=c(1,3) )
 
 bp<- boxplot( s$F, range=bprange , plot=F  )
 lo<-  bp$stats[1,1]
@@ -15,6 +15,8 @@ hi<-  bp$stats[5,1]
 plot(  sort( s$F ) , main="het/F statistic" )
 abline( h= bp$stats[c(1,5),1], lty=3 )
 boxplot( s$F, range=bprange )
+
+hist(s$F, col="grey", main="", xlab="het/F-statistic")
 
 sel<- s$F > hi | s$F < lo 
 if( sum( sel ) > 0 ){

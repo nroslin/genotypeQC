@@ -1,5 +1,5 @@
 # Created 20 January 2022.
-# Last modified:  18 Jan 2023
+# Last modified:  25 May 2023
 
 # Make some plots and do some sex inference.
 # Estimate how many of each sex chromosome a person carries (0, 1, 2, 
@@ -26,12 +26,16 @@ segments(-1, 0.9, 0.05, 0.9, lty=2)
 segments(0.05, 0.9, 0.05, 1.1, lty=2)
 
 #chrX het vs. chr X call rate
+#chrX call rate may not have been calculated, so check if all missing first
+if ( sum(!is.na(x$ChrXcr)) > 0 ) {
 plot(x$ChrXhetRate, x$ChrXcr, main=paste(infile, ": All samples"), pch=x$PedSex+1, 
   col=x$PedSex+1, xlab="ChrX heterozygosity", ylab="ChrX call rate")
 
 #chrX call rate vs. chrY call rate
 plot(x$ChrXcr, x$ChrYcr, main=paste(infile, ": All samples"), pch=x$PedSex+1, 
   col=x$PedSex+1, xlab="ChrX call rate", ylab="ChrY call rate")
+}
+
 dev.off()
 
 ### estimate counts ###
