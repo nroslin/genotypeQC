@@ -1,5 +1,5 @@
 # Created 20 January 2022.
-# Last modified:  25 May 2023
+# Last modified:  30 May 2023
 
 # Make some plots and do some sex inference.
 # Estimate how many of each sex chromosome a person carries (0, 1, 2, 
@@ -14,8 +14,14 @@ outfile<-paste0(infile, "_inferredSex.txt")
 x<-read.table(paste0(infile, "_sexCheck.txt"), header=T, as.is=T)
 
 #make some plots
-pdf(paste0(infile, "_sexCheck.pdf"), height=5, width=15)
-par(mfrow=c(1,3))
+if ( sum(!is.na(x$ChrXcr)) > 0 ) {  #chrX call rate has been calculated;
+					#means extra  plots will be drawn
+  pdf(paste0(infile, "_sexCheck.pdf"), height=5, width=15)
+  par(mfrow=c(1,3))
+} else {
+  pdf(paste0(infile, "_sexCheck.pdf"), height=5, width=5)
+}
+
 #chr X het vs. chr Y call rate
 plot(x$ChrXhetRate, x$ChrYcr, main=paste(infile, ": All samples"), pch=x$PedSex+1, 
   col=x$PedSex+1, xlab="ChrX heterozygosity", ylab="ChrY call rate")

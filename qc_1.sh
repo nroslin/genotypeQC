@@ -16,6 +16,9 @@ tmpfile=_$$_tmp_
 # where the scripts called here are located 
 scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/Genotypes/qc
 
+#summary information will be written into a report
+reportfile=${prefix}_QCreport.txt
+
 imissrate=$3
 lmissrate=$4
 
@@ -23,6 +26,15 @@ hetbprange=$5
 
 echo FID IID SOURCE > ${prefix}.remove.txt 
 echo SNP SOURCE > ${prefix}.exclude.txt 
+
+### report ###
+echo "QC summary report for $dir/$prefix PLINK files" > $reportfile
+date >> $reportfile
+echo "" >> $reportfile
+echo "Sample-specific QC" >> $reportfile
+echo "------------------" >> $reportfile
+echo >> $reportfile
+### report ###
 
 #############
 # SAMPLE QC #
@@ -32,8 +44,8 @@ echo SNP SOURCE > ${prefix}.exclude.txt
 # sex check in PLINK sucks, so do it more manually
 #use bcftools to count heterozygous calls on X and number of calls Y
 #note that PLINK will give warning about non-valid alleles; these are D/I
-plink --memory 8000 --bfile $dir/$prefix --chr 23 --recode vcf --snps-only --out _$$_tmp_c23
-bcftools +smpl-stats _$$_tmp_c23.vcf > _$$_tmp_c23.bcfout
+plink --memory 8000 --bfile $dir/$prefix --chr 23 --recode vcf --snps-only --out ${tmpfile}c23
+bcftools +smpl-stats ${tmpfile}c23.vcf > ${tmpfile}c23.bcfout
 
 #change chr Y chromosome code to autosome and calculate missing rate
 #otherwise, females will always show no calls
@@ -53,6 +65,22 @@ R --no-save --args $prefix < $scriptdir/qc_sexCheck.r > qc_sexCheck.log
 #problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
 #inferred sex
 sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SexCheck"}' >> $prefix.remove.txt
+
+### report ###
+echo "Sex check:  see file ${prefix}_sexCheck.txt" >> $reportfile
+echo "The following samples were removed because of sex inference problems" >> $reportfile
+grep SexCheck $prefix.remove.txt >> _$$_tmp_sexproblem
+lines=`wc -l _$$_tmp_sexproblem | awk '{print $1}'`
+if [ $lines -gt 0 ]
+then
+  #cat _$$_tmp_sexproblem >> $reportfile
+  head -1 ${prefix}_inferredSex.txt >> $reportfile
+  awk '{print $2}' _$$_tmp_sexproblem | egrep -f - ${prefix}_inferredSex.txt >> $reportfile
+else
+  echo "NONE" >> $reportfile
+fi
+echo "" >> $reportfile
+### report ###
 
 # THIS NEEDS TO BE REFINED. AWAITING SEX INFO 
 # as of v > 0.2.2 this is commented 
@@ -94,13 +122,59 @@ plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --exclude ${tmpfile
 \rm ${prefix}_missing_step2.lmiss
 awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imiss  >> ${prefix}.remove.txt 
 
+R --no-save --args $prefix $imissrate < $scriptdir/qc_missingBySample.r > qc_missingBySample.log
+
+### report ###
+echo "Sample call rate:  see file ${prefix}_sampleCallRate.pdf" >> $reportfile
+echo "The following samples were removed because of low call rate (missing > $imissrate)" >> $reportfile
+grep IMISS ${prefix}.remove.txt > _$$_tmp_lowcr
+lines=`wc -l _$$_tmp_lowcr | awk '{print $1}'`
+if [ $lines -gt 0 ]
+then
+  #cat _$$_tmp_lowcr >> $reportfile
+  head -1 ${prefix}_missing_step2.imiss >> $reportfile
+  awk '{print $2}' _$$_tmp_lowcr | egrep -f - ${prefix}_missing_step2.imiss >> $reportfile
+else
+  echo "NONE" >> $reportfile
+fi
+echo "" >> $reportfile
+### report ###
+
 
 ##########
 # het
-awk '$1<23 {print $2}' $dir/${prefix}.bim > ${tmpfile}.extract.txt
-plink --memory 8000  --bfile ${tmpfile}_update_sex --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
+#awk '$1<23 {print $2}' $dir/${prefix}.bim > ${tmpfile}.extract.txt
+#plink --memory 8000  --bfile ${tmpfile}_update_sex --het --extract ${tmpfile}.extract.txt --exclude  ${tmpfile}.exclude.txt --out ${prefix}_het
 # this excludes samples if F is and outlier wrt boxplot with range=$hetbprange
-Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
+#Rscript $scriptdir/qc_het.r ${prefix}_het.het ${prefix}.remove.txt $hetbprange
+
+#try calculating true heterozygosity instead of F stat in PLINK (easier to
+#explain/interpret)
+plink --memory 8000 --bfile ${tmpfile}_update_sex --chr 1-22 --recode vcf --snps-only --out ${tmpfile}_auto
+bcftools +smpl-stats ${tmpfile}_auto.vcf > ${tmpfile}auto.bcfout
+
+#do some formatting of bcf output
+echo -e "Filter\tFID\tIID\tNgtypes\tNnonref\tNhomRef\tNhomAlt\tNhet\tNhemi\tNsnv\tNindel\tNsingle\tNmiss\tNts\tNtv\tRatioTsTv" > ${prefix}_autoHet.txt
+sed '1,/DEF/d' ${tmpfile}auto.bcfout | sed '1,/DEF/d' | sed '/^SITE/d' | sed 's/_/\t/' >> ${prefix}_autoHet.txt
+R --no-save --args ${prefix} $hetbprange < $scriptdir/qc_truehet.r > qc_truehet.log
+
+### report ###
+echo "Autosomal heterozygosity:  see file ${prefix}_autoHet.pdf" >> $reportfile
+echo "The following samples were removed because of excessive het (> $hetbprange * IQR)" >> $reportfile
+grep HET ${prefix}.remove.txt > ${tmpfile}highhet
+lines=`wc -l _$$_tmp_highhet | awk '{print $1}'`
+if [ $lines -gt 0 ]
+then
+  cat ${tmpfile}highhet >> $reportfile
+else
+  echo "NONE" >> $reportfile
+fi
+echo >> $reportfile
+
+echo "List of samples removed are in file ${prefix}.remove.txt" >> $reportfile
+echo >> $reportfile
+echo >> $reportfile
+### report ###
 
 #############
 # MARKER QC #
@@ -118,6 +192,15 @@ plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --chr 23 --out ${pr
 awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_Xmales_step3.lmiss >> ${prefix}.exclude.txt
 
 \rm ${prefix}_missing_step3.imiss
+
+### report ###
+echo "SNP-specific QC" >> $reportfile
+echo "---------------" >> $reportfile
+echo >> $reportfile
+lmiss=`grep LMISS $prefix.exclude.txt | wc -l`
+echo "SNP call rate: $lmiss SNPs removed because of low call rate (missing >$lmissrate)" >> $reportfile
+echo >> $reportfile
+### report ###
 
 
 
@@ -160,6 +243,12 @@ join -v 2 -1 1 -2 2  ${tmpfile}.bestcallrate   ${tmpfile}.snpnames.sorted   | aw
 
 sort -u  ${prefix}.exclude.txt > ${tmpfile} ; mv ${tmpfile} ${prefix}.exclude.txt
 
+### report ###
+ndup=`grep DUPLICATE ${prefix}.exclude.txt | wc -l`
+echo "Duplicate SNPs: $ndup SNPs removed because of duplication " >> $reportfile
+echo >> $reportfile
+### report ###
+
 
 
 ########
@@ -167,7 +256,12 @@ sort -u  ${prefix}.exclude.txt > ${tmpfile} ; mv ${tmpfile} ${prefix}.exclude.tx
 awk '$1==0 {print $2,"CHR_0"}' $dir/$prefix.bim >> ${prefix}.exclude.txt
 
 
-
+### report ###
+nzero=`grep CHR_0 ${prefix}.exclude.txt | wc -l`
+echo "Unplaced SNPs:  $nzero SNPs removed because of unknown map position" >> $reportfile
+echo >> $reportfile
+echo "List of excluded SNPs in ${prefix}.exclude.txt" >> $reportfile
+### report ###
 
 
 
