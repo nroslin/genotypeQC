@@ -14,7 +14,7 @@ prefix=$2
 # tmp file prefix. All _$$_tmp_* will be deleted
 tmpfile=_$$_tmp_ 
 # where the scripts called here are located 
-scriptdir=/hpf/projects/arnold/users/mlemire/scripts/qc/genotypingarrays
+scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/Genotypes/qc
 
 
 
@@ -61,10 +61,10 @@ done
 
 
 
-\rm ${tmpfile}* 
-\rm ${prefix}*.nosex
-\rm ${prefix}*.nof
-\rm ${prefix}*.hh
+\rm -f ${tmpfile}* 
+\rm -f ${prefix}*.nosex
+\rm -f ${prefix}*.nof
+\rm -f ${prefix}*.hh
 
 
 

@@ -4,21 +4,15 @@ ARGS<- commandArgs( TRUE )
 input.pca <- ARGS[1]
 input.fam<- ARGS[2] 
 output.prefix  <-ARGS[3]
-use.amr <- ARGS[4]   #do we use AMR samples?  1=yes, 0=no
 
 kgsamples <- read.table("/hpf/projects/arnold/references/www.tcag.ca/documents/tools/sampleTable.txt", header=T )
 pop<- kgsamples[, c("ID","Continent")]
 names(pop)[1]<-"IID"
 
-if ( use.amr == 0 ) {
 ###exclude AMR samples:  this is for cases where genotyped samples were
 #pre-selected to be EUR, EAS, SAS (by self-report); there is too much overlap
 #between AMR and SAS in the first 3 PCs, so inference is a bit muddy
 pop<-pop[pop$Continent!="AMR",]
-is.factor(pop$Continent)
-levels(pop$Continent)
-levels(droplevels(pop$Continent))
-}
 
 gen <-read.table( input.fam , head=F )
 ped<- data.frame( gen[,1:2], o=1:nrow( gen ) )
@@ -51,23 +45,23 @@ samples<- is.na( pca$Continent )
 
 
 
-#outliers<- 
-#  apply( pca[ samples ,c( "PC1","PC2","PC3" ) ] , 2, 
-#      function(v){ 
-#        bp<- boxplot(v, plot=F, range=3 )
-#        is.element( v, bp$out )
-#      }
-#  )
+outliers<- 
+  apply( pca[ samples ,c( "PC1","PC2","PC3" ) ] , 2, 
+      function(v){ 
+        bp<- boxplot(v, plot=F, range=3 )
+        is.element( v, bp$out )
+      }
+  )
 
 
 
-#outliers<- apply( outliers, 1, any ) 
+outliers<- apply( outliers, 1, any ) 
 
 
-#write.table( pca[ samples, c("FID","IID")][outliers,] , paste( output.prefix, ".outliers.txt" , sep="" ), quote=F, col=T, row=F )
+write.table( pca[ samples, c("FID","IID")][outliers,] , paste( output.prefix, ".outliers.txt" , sep="" ), quote=F, col=T, row=F )
 
 
-col<- as.integer( as.factor(pca$Continent) ) +1 
+col<- as.integer( pca$Continent ) +1 
 # black
 col[samples]<- 1
 
@@ -75,7 +69,7 @@ pch<- rep( 21, nrow(pca) )
 # samples are bullets
 pch[ is.na( pca$Continent ) ]<-19 
 # outliers are circles with X in them  
-#pch[samples][ outliers ]<- 13
+pch[samples][ outliers ]<- 13
 
 pdf( paste( output.prefix, ".pcaplot.pdf",sep=""),  width=12, height=18)
 #par( mfrow=c(3,1) )
@@ -113,7 +107,7 @@ di<- as.matrix( dist( pca.sub[,1:3] ) )
 di<- di[sel, !sel]
 
 # take closest 1kg sample
-anc <- droplevels(as.factor(pca$Continent[ !sel ]))
+anc <- pca$Continent[ !sel ]
 paste0("dist", levels(anc) )
 
 closest<- apply( di, 1, which.min ) 
@@ -123,7 +117,7 @@ sample.anc<- anc[ closest ]
 
 dist.to.group<-format( t(apply( di, 1, function( x ){ aggregate( x, by=list( anc ), mean )[,2] } )), digit=3 )
 
-colnames( dist.to.group )<- paste0("dist", levels(droplevels(anc)) )
+colnames( dist.to.group )<- paste0("dist", levels(anc) )
 
 
 

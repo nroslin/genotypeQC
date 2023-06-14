@@ -2,6 +2,8 @@
 module load plink/1.90b6.21
 module load R/3.5.1
 
+#in this sub-version, ancestry inference excludes AMR from the possibilities
+
 #alias plink='plink --noweb'
 
 # 1kg plink files provided by TCAG
@@ -15,8 +17,6 @@ kgdir=/hpf/projects/arnold/references/www.tcag.ca/documents/tools
 dir=$1
 # prefix of the bfiles
 prefix=$2
-#should we include AMR in ancestry inference?  1=yes, 0=no
-amr=$3
 
 # tmp file prefix. All _$$_tmp_* will be deleted
 tmpfile=_$$_tmp_ 
@@ -51,37 +51,19 @@ plink --memory 8000 --bfile  ${tmpfile}_${prefix} --extract  ${tmpfile}_${prefix
 
 # extracting in 1kg. recoding snps names first 
 # awk '{$5<$6?al=$5":"$6:al=$6":"$5}{$2=$1":"$4; $3=0}{print}'  $kgdir/indep.bim > ${tmpfile}_indep.bim 
-
-### AMR
-if [ $amr -eq 0 ]
-then
-  ### no AMR:  exclude any AMR samples
-  #note that FID is not necessarily correct, so get from fam file
-  awk '$4=="AMR" {print $2}' $kgdir/sampleTable.txt | egrep -f - $kgdir/indep.fam | awk '{print $1,$2}' > amr.txt
-  #also remove 1kg population outliers (listed in 1kg report)
-  cat amr.txt $kgdir/popOutliers.txt | sort -u > 1kg.remove.txt
-else
-  cp $kgdir/popOutliers.txt 1kg.remove.txt
-fi
-
-plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim --remove 1kg.remove.txt   --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
 
 plink --memory 8000 --bfile  ${tmpfile}_${prefix} --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}
 
 # first round of flipping 
-plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim  --remove 1kg.remove.txt  --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim    --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
 plink --memory 8000 --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge --allow-no-sex
 
 plink --memory 8000 --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
 
 
 mv ${tmpfile}_merge.fam  ${prefix}.qc_pca.fam
-#if [ $amr -eq 0 ]
-#then
-#  R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca < $scriptdir/qc_pca_noAMR.r
-#else
-  R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca $amr < $scriptdir/qc_pca.r
-#fi
+R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca < $scriptdir/qc_pca_noAMR.r
 
 
 ############## 
