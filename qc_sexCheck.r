@@ -1,5 +1,5 @@
 # Created 20 January 2022.
-# Last modified:  13 Jun 2023
+# Last modified:  29 Jun 2023
 
 # Make some plots and do some sex inference.
 # Estimate how many of each sex chromosome a person carries (0, 1, 2, 
@@ -30,7 +30,7 @@ x$NchrX<-nx
 
 #chrY
 ny<-rep(NA, nrow(x))
-sel<-x$ChrYcr>0.9   #one Y chr if chrY(cr)>0.9
+sel<-x$ChrYcr>0.75   #one Y chr if chrY(cr)>0.75
 ny[sel]<-1
 sel<-x$ChrYcr<0.4   #no Y chr if chrY(cr)<0.4  (chip-dependent)
 ny[sel]<-0
@@ -46,8 +46,6 @@ sel<-nx==2 & ny==0   #2 X, 0 Y (female)
 inf.sex[sel]<-2
 x$InferredSex<-inf.sex
 
-#data<-data.frame(FID=x$FID, IID=x$IID, PedSex=x$PedSex, InferredSex=inf.sex,
-#  NchrX=nx, NchrY=ny)
 
 
 #write it out, without doing anything about conflict with input sex/gender
@@ -73,19 +71,19 @@ plot(x$ChrXhetRate, x$ChrYcr, main=paste0(infile, ": ", nrow(x), " samples"),
 segments(0.10, 0.4, 0.3, 0.4, lty=2)
 segments(0.10, 0.4, 0.10, -1, lty=2)
 segments(0.3, 0.4, 0.3, -1, lty=2)
-segments(-1, 0.9, 0.05, 0.9, lty=2)
-segments(0.05, 0.9, 0.05, 1.1, lty=2)
+segments(-1, 0.75, 0.05, 0.9, lty=2)
+segments(0.05, 0.75, 0.05, 1.1, lty=2)
 
 #repeat for problematic samples and ones where pedsex is unknown (coded as 0)
 problem<-x$PedSex==0 | x$PedSex != x$InferredSex | is.na(x$InferredSex)
 plot(x[problem, "ChrXhetRate"], x[problem,"ChrYcr"], main=paste0(infile, ": ",
-  sum(problem), " problematic samples"), pch=x[problem,"PedSex"]+1, 
+  sum(problem), " atypical samples"), pch=x[problem,"PedSex"]+1, 
   col=x[problem,"PedSex"]+1, xlab="ChrX heterozygosity", ylab="ChrY call rate")
 segments(0.10, 0.4, 0.3, 0.4, lty=2)
 segments(0.10, 0.4, 0.10, -1, lty=2)
 segments(0.3, 0.4, 0.3, -1, lty=2)
-segments(-1, 0.9, 0.05, 0.9, lty=2)
-segments(0.05, 0.9, 0.05, 1.1, lty=2)
+segments(-1, 0.75, 0.05, 0.9, lty=2)
+segments(0.05, 0.75, 0.05, 1.1, lty=2)
 
 ### two optional plots
 #chrX het vs. chr X call rate

@@ -1,6 +1,9 @@
 v0.5.0
+January 2022
 Overhauled sex check to avoid PLINK and to include checking
-Y chromosome data.
+Y chromosome data.  Changed PLINK from version 1.90b3x to
+1.9.b3.42.  Changed R from version 3.5.1 to 3.6.1.
+Calculating naive heterozygosity, instead of PLINK F-stat
 First version by Nicole Roslin
 #######################################################
 
@@ -15,6 +18,7 @@ male hets to missing, and then recalculate missingness
 Using only inferred females for chrX hwe. 
 Used to count chr=0 pos=0 as duplicates SNPs
 #######################################################
+
 v0.2.0 (master)
 Changed pca calulation. Now using eigenstrat. Bug in 
 previous versions that used prcomp, centering and scaling
