@@ -56,7 +56,8 @@ while (<SEX2>) {
   next if /^FID/;
   my ( $id2, $pedsex2, $infsex, $nx, $ny ) = (split)[1,2,3,4,5];
   my $sexchr;
-  if ( $nx == 1 && $ny == 1 ) { $sexchr = "XY"; }
+  if ( $nx eq "NA" || $ny eq "NA" ) { $sexchr = "NA"; }
+  elsif ( $nx == 1 && $ny == 1 ) { $sexchr = "XY"; }
   elsif ( $nx == 2 && $ny == 0 ) { $sexchr = "XX"; }
   elsif ( $nx == 2 && $ny == 1 ) { $sexchr = "XXY"; }   #add other options?
   else { $sexchr = "unknown"; }
