@@ -1,3 +1,9 @@
+v0.6.0
+Added QC report text file to summarize results. Changed thresholds
+for chr Y call rate, to allow for individuals with a deletion at
+start of chr Y.  Added an option to exclude AMR from PCA.
+#######################################################
+
 v0.5.0
 January 2022
 Overhauled sex check to avoid PLINK and to include checking

@@ -71,7 +71,7 @@ plot(x$ChrXhetRate, x$ChrYcr, main=paste0(infile, ": ", nrow(x), " samples"),
 segments(0.10, 0.4, 0.3, 0.4, lty=2)
 segments(0.10, 0.4, 0.10, -1, lty=2)
 segments(0.3, 0.4, 0.3, -1, lty=2)
-segments(-1, 0.75, 0.05, 0.9, lty=2)
+segments(-1, 0.75, 0.05, 0.75, lty=2)
 segments(0.05, 0.75, 0.05, 1.1, lty=2)
 
 #repeat for problematic samples and ones where pedsex is unknown (coded as 0)
@@ -82,7 +82,7 @@ plot(x[problem, "ChrXhetRate"], x[problem,"ChrYcr"], main=paste0(infile, ": ",
 segments(0.10, 0.4, 0.3, 0.4, lty=2)
 segments(0.10, 0.4, 0.10, -1, lty=2)
 segments(0.3, 0.4, 0.3, -1, lty=2)
-segments(-1, 0.75, 0.05, 0.9, lty=2)
+segments(-1, 0.75, 0.05, 0.75, lty=2)
 segments(0.05, 0.75, 0.05, 1.1, lty=2)
 
 ### two optional plots

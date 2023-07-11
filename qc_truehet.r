@@ -20,7 +20,7 @@ boxplot( s$AutoHet, range=bprange )
 
 sel<- s$AutoHet > hi | s$AutoHet < lo 
 if( sum( sel ) > 0 ){
- df<- cbind( s[sel, 1:2 ], SOURCE="HET" )
+ df<- cbind( s[sel, 2:3 ], SOURCE="HET" )
  write.table( df, paste0(prefix, ".remove.txt"), quote=F, col=F, row=F, append=T )
 }
 

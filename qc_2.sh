@@ -57,31 +57,26 @@ if [ $amr -eq 0 ]
 then
   ### no AMR:  exclude any AMR samples
   #note that FID is not necessarily correct, so get from fam file
-  awk '$4=="AMR" {print $2}' $kgdir/sampleTable.txt | egrep -f - $kgdir/indep.fam | awk '{print $1,$2}' > amr.txt
+  awk '$4=="AMR" {print $2}' $kgdir/sampleTable.txt | egrep -f - $kgdir/indep.fam | awk '{print $1,$2}' > ${tmpfile}_amr.txt
   #also remove 1kg population outliers (listed in 1kg report)
-  cat amr.txt $kgdir/popOutliers.txt | sort -u > 1kg.remove.txt
+  cat ${tmpfile}_amr.txt $kgdir/popOutliers.txt | sort -u > ${tmpfile}_1kg.remove.txt
 else
-  cp $kgdir/popOutliers.txt 1kg.remove.txt
+  cp $kgdir/popOutliers.txt ${tmpfile}_1kg.remove.txt
 fi
 
-plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim --remove 1kg.remove.txt   --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim --remove ${tmpfile}_1kg.remove.txt   --extract ${tmpfile}_${prefix}.prune.in  --make-bed --out ${tmpfile}_1kg  
 
 plink --memory 8000 --bfile  ${tmpfile}_${prefix} --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}
 
 # first round of flipping 
-plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim  --remove 1kg.remove.txt  --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
+plink --memory 8000 --bed $kgdir/indep.bed --fam $kgdir/indep.fam --bim $kgdir/indep.bim  --remove ${tmpfile}_1kg.remove.txt  --extract ${tmpfile}_${prefix}.prune.in --flip  ${tmpfile}-merge.missnp --make-bed --out ${tmpfile}_1kg  
 plink --memory 8000 --bfile  ${tmpfile}_${prefix}_pruned --bmerge ${tmpfile}_1kg.bed ${tmpfile}_1kg.bim  ${tmpfile}_1kg.fam --exclude ${prefix}.exclude.txt --make-bed  --out ${tmpfile}_merge --allow-no-sex
 
 plink --memory 8000 --bfile ${tmpfile}_merge --pca --out ${prefix}.qc_pca 
 
 
 mv ${tmpfile}_merge.fam  ${prefix}.qc_pca.fam
-#if [ $amr -eq 0 ]
-#then
-#  R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca < $scriptdir/qc_pca_noAMR.r
-#else
-  R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca $amr < $scriptdir/qc_pca.r
-#fi
+R --no-save --args ${prefix}.qc_pca.eigenvec  ${prefix}.qc_pca.fam  ${prefix}.1kgpca $amr < $scriptdir/qc_pca.r
 
 
 ############## 

@@ -2,7 +2,7 @@
 
 
 # Created 31 May 2023.
-# Last modified:  21 Jun 2023
+# Last modified:  05 Jul 2023
 
 # Optional QC step:  looking for batch/plate effects.  Testing one batch
 # vs. the others combined.
@@ -34,7 +34,7 @@ plink --memory 8000 --allow-no-sex --bfile $dir/$prefix --remove $remove --exclu
   #makes $prefix.batch.PHENNAME.model
 
 #get list of output files
-ls *.model > model.tmp$$
+ls ${prefix}.*.model > model.tmp$$
 nfiles=`wc -l model.tmp$$ | awk '{print $1}'`
 i=1
 while [ $i -le $nfiles ]

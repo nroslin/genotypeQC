@@ -68,9 +68,9 @@ sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1
 
 ### report ###
 echo "Sex check:  see file ${prefix}_sexCheck.txt" >> $reportfile
-echo "The following samples were removed because of sex inference problems" >> $reportfile
 grep SexCheck $prefix.remove.txt >> _$$_tmp_sexproblem
 lines=`wc -l _$$_tmp_sexproblem | awk '{print $1}'`
+echo "The following $lines samples were removed because of sex inference problems" >> $reportfile
 if [ $lines -gt 0 ]
 then
   #cat _$$_tmp_sexproblem >> $reportfile
