@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load plink/1.90b3x
+module load plink/1.90b6.21
 module load R/3.5.1
 
 alias plink='plink --noweb'

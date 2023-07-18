@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  11 Jul 2023
+# Last modified:  17 Jul 2023
 
 # Make a final table of the QC stats generated per sample.
 
@@ -18,6 +18,7 @@ my $insex2 = "${prefix}_inferredSex.txt";   #inference
 my $inmiss = "${prefix}_missing_step2.imiss";   #missingness
 my $inhet = "${prefix}_autoHet.txt";   #heterozygosity
 my $inanc = "${prefix}.1kgpca.closestAncestry.txt";   #pop inference
+my $insr = "${prefix}_SRancestry.txt";   #self-reported ancestry
 my $inrem = "${prefix}.remove.txt";   #IDs failing QC
 my $infam = "${prefix}.qc_pca.fam";    #####temporary fam file (fix this later)
 my $output = "${prefix}_tableBySample.txt";
@@ -56,7 +57,7 @@ while (<SEX2>) {
   next if /^FID/;
   my ( $id2, $pedsex2, $infsex, $nx, $ny ) = (split)[1,2,3,4,5];
   my $sexchr;
-  if ( $nx eq "NA" || $ny eq "NA" ) { $sexchr = "NA"; }
+  if ( $nx eq "NA" || $ny eq "NA" ) { $sexchr = "unknown"; }
   elsif ( $nx == 1 && $ny == 1 ) { $sexchr = "XY"; }
   elsif ( $nx == 2 && $ny == 0 ) { $sexchr = "XX"; }
   elsif ( $nx == 2 && $ny == 1 ) { $sexchr = "XXY"; }   #add other options?
@@ -101,20 +102,33 @@ while (<ANC>) {
 }
 close ANC;
 
+#self-reported ancestry
+#this info comes from clinical file, so will probably have more IDs than were
+#genotyped
+open SRA, "$insr" or die "Cannot open file $insr:  $!";
+while (<SRA>) {
+  chomp;
+  my ( $id6, $sr ) = split;
+  if ( exists $datahash{$id6} ) {
+	$datahash{$id6} = join "\t", $datahash{$id6}, $sr;
+  }
+}
+close SRA;
+
 ### list of IDs failing QC ###
 #put any sex mismatch in a separate hash from other QC failures
 open REM, "$inrem" or die "Cannot open file $inrem:  $!";
 while (<REM>) {
   chomp;
   next if /^FID/;
-  my ( $id6, $reason ) = (split)[1,2];
-  if ( $reason =~ /Sex/ ) { $sexhash{$id6} = 1; }
+  my ( $id7, $reason ) = (split)[1,2];
+  if ( $reason =~ /Sex/ ) { $sexhash{$id7} = 1; }
   else {   #failed for reasons other than sex
-	$failhash{$id6} += 1;   #failed QC
-	if ( exists $reasonhash{$id6} ) {
-	  $reasonhash{$id6} = join ",", $reasonhash{$id6}, $reason;
+	$failhash{$id7} += 1;   #failed QC
+	if ( exists $reasonhash{$id7} ) {
+	  $reasonhash{$id7} = join ",", $reasonhash{$id7}, $reason;
 	}
-	else { $reasonhash{$id6} = $reason; }
+	else { $reasonhash{$id7} = $reason; }
   }
 }
 close REM;
@@ -124,7 +138,7 @@ close REM;
 #write it out, only for TAG samples
 #### need to include column for sexhash problems
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
-print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tClosestAncestry\tSexProblems\tQCfail\tReasons\n";
+print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tClosestAncestry\tSRancestry\tSexProblems\tQCfail\tReasons\n";
 
 open FAM, "$infam" or die "Cannot open file $infam:  $!";
 while (<FAM>) {
