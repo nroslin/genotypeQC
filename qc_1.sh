@@ -19,12 +19,17 @@ scriptdir=/hpf/projects/arnold/users/nroslin/Scripts/Genotypes/qc
 #summary information will be written into a report
 reportfile=${prefix}_QCreport.txt
 
+#sample lists
+removefile=${prefix}.remove.txt   #samples with poor quality
+mismatchfile=${prefix}.mismatch.txt   #sex, ancestry mismatch etc.
+
 imissrate=$3
 lmissrate=$4
 
 hetbprange=$5 
 
-echo FID IID SOURCE > ${prefix}.remove.txt 
+echo FID IID SOURCE > $removefile
+echo FID IID SOURCE > $mismatchfile
 echo SNP SOURCE > ${prefix}.exclude.txt 
 
 ### report ###
@@ -64,13 +69,13 @@ R --no-save --args $prefix < $scriptdir/qc_sexCheck.r > qc_sexCheck.log
 
 #problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
 #inferred sex
-sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SexCheck"}' >> $prefix.remove.txt
+sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SexCheck"}' >> $mismatchfile
 
 ### report ###
 echo "Sex check:  see file ${prefix}_sexCheck.txt" >> $reportfile
-grep SexCheck $prefix.remove.txt >> _$$_tmp_sexproblem
+grep SexCheck $mismatchfile >> _$$_tmp_sexproblem
 lines=`wc -l _$$_tmp_sexproblem | awk '{print $1}'`
-echo "The following $lines samples were removed because of sex inference problems" >> $reportfile
+echo "The following $lines samples were flagged because of sex inference problems" >> $reportfile
 if [ $lines -gt 0 ]
 then
   #cat _$$_tmp_sexproblem >> $reportfile
@@ -120,14 +125,14 @@ awk 'NR>1 && ( $5>'$lmissrate' || $4==0 ) {print $2}' ${prefix}_missing_Xmales.l
 plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --exclude ${tmpfile}.exclude.txt --out ${prefix}_missing_step2
 # this file  not needed 
 \rm ${prefix}_missing_step2.lmiss
-awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imiss  >> ${prefix}.remove.txt 
+awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imiss  >> $removefile
 
 R --no-save --args $prefix $imissrate < $scriptdir/qc_missingBySample.r > qc_missingBySample.log
 
 ### report ###
 echo "Sample call rate:  see file ${prefix}_sampleCallRate.pdf" >> $reportfile
 echo "The following samples were removed because of low call rate (missing > $imissrate)" >> $reportfile
-grep IMISS ${prefix}.remove.txt > _$$_tmp_lowcr
+grep IMISS $removefile > _$$_tmp_lowcr
 lines=`wc -l _$$_tmp_lowcr | awk '{print $1}'`
 if [ $lines -gt 0 ]
 then
@@ -161,7 +166,7 @@ R --no-save --args ${prefix} $hetbprange < $scriptdir/qc_truehet.r > qc_truehet.
 ### report ###
 echo "Autosomal heterozygosity:  see file ${prefix}_autoHet.pdf" >> $reportfile
 echo "The following samples were removed because of excessive het (> $hetbprange * IQR)" >> $reportfile
-grep HET ${prefix}.remove.txt > ${tmpfile}highhet
+grep HET $removefile > ${tmpfile}highhet
 lines=`wc -l _$$_tmp_highhet | awk '{print $1}'`
 if [ $lines -gt 0 ]
 then
@@ -171,7 +176,7 @@ else
 fi
 echo >> $reportfile
 
-echo "List of samples removed are in file ${prefix}.remove.txt" >> $reportfile
+echo "List of samples removed are in file $removefile" >> $reportfile
 echo >> $reportfile
 echo >> $reportfile
 ### report ###
@@ -184,11 +189,11 @@ echo >> $reportfile
 ##############
 # missingness
 
-plink --memory 8000  --bfile ${tmpfile}_update_sex --remove ${prefix}.remove.txt --missing --out ${prefix}_missing_step3
+plink --memory 8000  --bfile ${tmpfile}_update_sex --remove $removefile --missing --out ${prefix}_missing_step3
 awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_step3.lmiss >> ${prefix}.exclude.txt 
 
 # chrX-specific
-plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --chr 23 --out ${prefix}_missing_Xmales_step3 --keep ${tmpfile}_males --remove  ${prefix}.remove.txt 
+plink --memory 8000  --bfile ${tmpfile}_update_sex --missing --chr 23 --out ${prefix}_missing_Xmales_step3 --keep ${tmpfile}_males --remove  $removefile
 awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_Xmales_step3.lmiss >> ${prefix}.exclude.txt
 
 \rm ${prefix}_missing_step3.imiss

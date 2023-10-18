@@ -5,6 +5,11 @@ input.pca <- ARGS[1]
 input.fam<- ARGS[2] 
 output.prefix  <-ARGS[3]
 use.amr <- ARGS[4]   #do we use AMR samples?  1=yes, 0=no
+outlier.detect<-ARGS[5]   #should we do outlier detection?  1=yes, 0=no
+
+use.amr<-as.numeric(use.amr)
+outlier.detect<-as.numeric(outlier.detect)
+outlier.detect
 
 kgsamples <- read.table("/hpf/projects/arnold/references/www.tcag.ca/documents/tools/sampleTable.txt", header=T )
 pop<- kgsamples[, c("ID","Continent")]
@@ -45,28 +50,6 @@ pca<- merge( ped, pca , by="ID" )
 # logical indicates which are the samples (ie not 1kg)
 samples<- is.na( pca$Continent )
 
-
-
-# outliers wrt samples only 
-
-
-
-#outliers<- 
-#  apply( pca[ samples ,c( "PC1","PC2","PC3" ) ] , 2, 
-#      function(v){ 
-#        bp<- boxplot(v, plot=F, range=3 )
-#        is.element( v, bp$out )
-#      }
-#  )
-
-
-
-#outliers<- apply( outliers, 1, any ) 
-
-
-#write.table( pca[ samples, c("FID","IID")][outliers,] , paste( output.prefix, ".outliers.txt" , sep="" ), quote=F, col=T, row=F )
-
-
 col<- as.integer( as.factor(pca$Continent) ) +1 
 # black
 col[samples]<- 1
@@ -74,8 +57,31 @@ col[samples]<- 1
 pch<- rep( 21, nrow(pca) )
 # samples are bullets
 pch[ is.na( pca$Continent ) ]<-19 
-# outliers are circles with X in them  
-#pch[samples][ outliers ]<- 13
+
+#### outliers ####
+if ( outlier.detect == 1 ) {
+# look for outliers wrt samples only (exclude 1kg)
+  outlier.detect
+
+outliers<- 
+  apply( pca[ samples ,c( "PC1","PC2","PC3" ) ] , 2, 
+      function(v){ 
+        bp<- boxplot(v, plot=F, range=3 )
+        is.element( v, bp$out )
+      }
+  )
+
+  outliers<- apply( outliers, 1, any ) 
+
+
+  write.table( pca[ samples, c("FID","IID")][outliers,] , paste( output.prefix, ".outliers.txt" , sep="" ), quote=F, col=T, row=F )
+
+  # for plots, outliers are shown as symbol X (used to be 13=square with X)
+  pch[samples][ outliers ]<- 4
+}
+#### outliers ####
+
+
 
 pdf( paste( output.prefix, ".pcaplot.pdf",sep=""),  width=12, height=18)
 #par( mfrow=c(3,1) )

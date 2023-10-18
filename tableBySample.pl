@@ -3,14 +3,14 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  17 Jul 2023
+# Last modified:  02 Aug 2023
 
 # Make a final table of the QC stats generated per sample.
 
 my $prefix = $ARGV[0];
 
 my $inclin = "../../recoded/${prefix}.providedSex.txt";
-	#we will see if this hard-fixed file name works
+	#we will see if this hard-coded file name works
 
 
 my $insex1 = "${prefix}_sexCheck.txt";  #raw stats
@@ -19,11 +19,13 @@ my $inmiss = "${prefix}_missing_step2.imiss";   #missingness
 my $inhet = "${prefix}_autoHet.txt";   #heterozygosity
 my $inanc = "${prefix}.1kgpca.closestAncestry.txt";   #pop inference
 my $insr = "${prefix}_SRancestry.txt";   #self-reported ancestry
+my $intwin = "${prefix}_mztwins.txt";   #any twins/duplicates
 my $inrem = "${prefix}.remove.txt";   #IDs failing QC
-my $infam = "${prefix}.qc_pca.fam";    #####temporary fam file (fix this later)
+my $infam = "../../recoded/${prefix}.fam";    #genotyped samples
 my $output = "${prefix}_tableBySample.txt";
 
-my ( %datahash, %sexhash, %failhash, %reasonhash );
+my ( %datahash, %sexhash, %srpop, %anchash, %twinhash, %twinidhash );
+my ( %failhash, %reasonhash );
 
 #original clinical sex
 open CLIN, "$inclin" or die "Cannot open file $inclin:  $!";
@@ -33,6 +35,8 @@ while (<CLIN>) {
   $datahash{$id0} = $clinsex;
 }
 close CLIN;
+#control samples (not in clinical database) should be NA12878, female EUR
+
 
 
 ### sex inference ###
@@ -46,7 +50,13 @@ while (<SEX1>) {
   if ( exists $datahash{$id1} ) {
     $datahash{$id1} = join "\t", $datahash{$id1}, $xhet, $ycr;
   }
-  else { $datahash{$id1} = join "\t", "NA", $xhet, $ycr; }
+  else { 
+	$datahash{$id1} = join "\t", 2, $xhet, $ycr; 
+	print "Warning:  ID $id1 has genotypes but is not in the clinical file\n";
+  }
+	#assume anyone genotyped but not in the clinical database are the
+	#controls, who should be female (NA12878)
+	#but also give warning
 }
 close SEX1;
 
@@ -93,27 +103,64 @@ while (<HET>) {
 close HET;
 
 ### ancestry ###
-open ANC, "$inanc" or die "Cannot open file $inanc:  $!";
-while (<ANC>) {
-  chomp;
-  next if /^FID/;
-  my ( $id5, $pop ) = (split)[1,2];
-  $datahash{$id5} = join "\t", $datahash{$id5}, $pop;
-}
-close ANC;
-
 #self-reported ancestry
 #this info comes from clinical file, so will probably have more IDs than were
 #genotyped
 open SRA, "$insr" or die "Cannot open file $insr:  $!";
 while (<SRA>) {
   chomp;
-  my ( $id6, $sr ) = split;
-  if ( exists $datahash{$id6} ) {
-	$datahash{$id6} = join "\t", $datahash{$id6}, $sr;
+  my ( $id5, $sr ) = split;
+  $srpop{$id5} = $sr;   #to test against inferred
+  if ( exists $datahash{$id5} ) {
+	$datahash{$id5} = join "\t", $datahash{$id5}, $sr;
   }
 }
 close SRA;
+
+open ANC, "$inanc" or die "Cannot open file $inanc:  $!";
+#inferred ancestry
+while (<ANC>) {
+  chomp;
+  next if /^FID/;
+  my ( $id6, $pop ) = (split)[1,2];
+  if ( exists $srpop{$id6} ) {   #in clinical file
+	$datahash{$id6} = join "\t", $datahash{$id6}, $pop;
+	if ( $srpop{$id6} ne $pop ) { $anchash{$id6} = 1; }  #mismatch
+	else { $anchash{$id6} = 0; }
+  }
+  else {   #not in clinical file, hopefully a control ("SR" EUR)
+	$datahash{$id6} = join "\t", $datahash{$id6}, "EUR", $pop;
+	if ( $pop ne "EUR" ) { $anchash{$id6} = 1; }
+	else { $anchash{$id6} = 0; }
+  }
+	
+}
+close ANC;
+
+
+### twins/duplicates ###
+#this is a work in progress
+open TWIN, "$intwin" or die "Cannot open file $intwin:  $!";
+while (<TWIN>) {
+  chomp;
+  my ( $name, $tid ) = split;   #$name is FID_IID, $tid is unique twin ID
+  my ( $fid7, $id7 ) = split /_/, $name;
+#  if ( exists $twinhash{$tid} ) {    #get list of TAG ids for each tid
+#	$twinhash{$tid} = join ",", $twinhash{$tid}, $id7;
+#  }
+#  else { $twinhash{$tid} = $id7; }  #not sure how helpful this is, since tid
+					#only exists here
+
+  if ( exists $twinhash{$tid} ) { #find matching twin pairs
+	my $othertwin = $twinhash{$tid}; 
+	$twinidhash{$id7} = $othertwin;
+	$twinidhash{$othertwin} = $id7;
+  }
+  else { $twinhash{$tid} = $id7; }
+  #this won't work properly for larger clusters (eg, triplets)
+}
+close TWIN;
+
 
 ### list of IDs failing QC ###
 #put any sex mismatch in a separate hash from other QC failures
@@ -121,37 +168,43 @@ open REM, "$inrem" or die "Cannot open file $inrem:  $!";
 while (<REM>) {
   chomp;
   next if /^FID/;
-  my ( $id7, $reason ) = (split)[1,2];
-  if ( $reason =~ /Sex/ ) { $sexhash{$id7} = 1; }
+  my ( $id8, $reason ) = (split)[1,2];
+  if ( $reason =~ /Sex/ ) { $sexhash{$id8} = 1; }
   else {   #failed for reasons other than sex
-	$failhash{$id7} += 1;   #failed QC
-	if ( exists $reasonhash{$id7} ) {
-	  $reasonhash{$id7} = join ",", $reasonhash{$id7}, $reason;
+	$failhash{$id8} += 1;   #failed QC
+	if ( exists $reasonhash{$id8} ) {
+	  $reasonhash{$id8} = join ",", $reasonhash{$id8}, $reason;
 	}
-	else { $reasonhash{$id7} = $reason; }
+	else { $reasonhash{$id8} = $reason; }
   }
 }
 close REM;
   
 
-
-#write it out, only for TAG samples
+#write it out, only for TAG samples; no, include controls but flag
 #### need to include column for sexhash problems
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
-print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tClosestAncestry\tSRancestry\tSexProblems\tQCfail\tReasons\n";
+print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tSRancestry\tClosestAncestry\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
 
 open FAM, "$infam" or die "Cannot open file $infam:  $!";
 while (<FAM>) {
   chomp;
   my ( $fid, $iid ) = (split)[0,1];
-  next unless $iid =~ /^TAG/;
+#  next unless $iid =~ /^TAG/;
   if ( exists $datahash{$iid} ) {
 	$sexhash{$iid} = 0 unless exists $sexhash{$iid};
 	my $fail = 0;
 	if ( exists $failhash{$iid} ) { $fail = 1; }
+	#add non-TAG samples to list of those who fail
+	#unless ( $iid =~ /^TAG/ ) { $fail = 1; }
 	my $why = "NA";
-	if ( exists $reasonhash{$iid} ) { $why = $reasonhash{$iid}; }
-	print OUT "$fid\t$iid\t$datahash{$iid}\t$sexhash{$iid}\t$fail\t$why\n";
+	if ( exists $reasonhash{$iid} ) { 
+	  $why = $reasonhash{$iid}; 
+	  if ( $why =~ /TWIN/ ) {
+		$why = join ",", $why, $twinidhash{$iid};
+	  }
+	}
+	print OUT "$fid\t$iid\t$datahash{$iid}\t$sexhash{$iid}\t$anchash{$iid}\t$fail\t$why\n";
   }
   else { print "No QC results for $iid\n"; }
 }

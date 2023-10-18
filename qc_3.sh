@@ -60,6 +60,11 @@ for g in $groups; do
 done 
 
 
+#new to v0.6.0
+#add any non-TAG sample to the list of samples to remove (should be controls)
+awk '$2!~/^TAG/ {print $1,$2, "CONTROL"}' $dir/$prefix.fam >> $prefix.remove.txt
+
+
 
 \rm -f ${tmpfile}* 
 \rm -f ${prefix}*.nosex
