@@ -110,7 +110,7 @@ open SRA, "$insr" or die "Cannot open file $insr:  $!";
 while (<SRA>) {
   chomp;
   my ( $id6, $sr ) = split;
-  if ( exists $datahash{$id6} ) {
+  if ( exists $infpop{$id6} ) {
 	$datahash{$id6} = join "\t", $datahash{$id6}, $sr;
 	if ( $sr eq "NA" ) {
 	  print "Warning:  ID $id6 has missing self-reported ancestry\n";
