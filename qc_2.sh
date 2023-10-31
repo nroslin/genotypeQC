@@ -96,7 +96,7 @@ echo >> $reportfile
 echo >> $reportfile
 echo "Sample duplicates" >> $reportfile
 echo "-----------------" >> $reportfile
-echo "The following samples were removed because they were expected to be part of a duplicate but are not:" >> $reportfile
+echo "The following samples were removed because they were expected to be part of a duplicate/replicate but are not:" >> $reportfile
 lines=`grep FALSE_DUPLICATES ${prefix}.remove.txt | wc -l | awk '{print $1}'`
 if [ $lines -gt 0 ]
 then
@@ -106,7 +106,7 @@ else
 fi
 echo >> $reportfile
 
-echo "The following samples were removed because they were part of a known duplicate and had lower call rate:" >> $reportfile
+echo "The following samples were removed because they were part of a known duplicate/replicate and had lower call rate:" >> $reportfile
 lines=`grep DUPLICATE_HIGHER_MISS ${prefix}.remove.txt | wc -l | awk '{print $1}'`
 if [ $lines -gt 0 ]
 then
@@ -116,7 +116,8 @@ else
 fi
 echo >> $reportfile
 
-echo "The following samples have duplicates:  check twin status" >> $reportfile
+echo "The following sample duplicates remain.  They could be known twins or" >> $reportfile
+echo "accidental duplicates:  check expected twin status" >> $reportfile
 sed '1d' ${tmpfile}_${prefix}_pruned.genome | awk '$10>0.9 && $2!=$4 {print $1,$2}' > ${tmpfile}.mz   #1st ID in pair
 sed '1d' ${tmpfile}_${prefix}_pruned.genome | awk '$10>0.9 && $2!=$4 {print $3,$4}' >> ${tmpfile}.mz   #2nd ID in pair
 lines=`wc -l ${tmpfile}.mz | awk '{print $1}'`
