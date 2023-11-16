@@ -1,7 +1,15 @@
+v0.7.0
+Added flag to turn PCA/ancestry outlier detection on or off.  Modified
+sample-specific QC stats table.  Improved handling of duplicates/twins.
+Added processing of control samples.  Generated list of samples with
+sex or ancestry mismatch (inferred vs. self-reported)
+#######################################################
+
 v0.6.0
 Added QC report text file to summarize results. Changed thresholds
 for chr Y call rate, to allow for individuals with a deletion at
-start of chr Y.  Added an option to exclude AMR from PCA.
+start of chr Y.  Added an option to exclude AMR from PCA.  Added
+a script to summarize QC stats per sample.
 #######################################################
 
 v0.5.0

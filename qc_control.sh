@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Created 15 November 2023.
-# Last modified:  15 Nov 2023
+# Last modified:  16 Nov 2023
 
 # Process control samples.  Assume if ID does not start with TAG then is a
 # control.  Also assume all controls are the same ID (NA12878) and so should
@@ -37,7 +37,7 @@ fi
 echo "Processing of control samples" >> $reportfile
 
 awk '$2!~/^TAG/ {print $1,$2}' $dir/$prefix.fam > $tmpfile.control
-ncontrols=`wc -l $tmpfile.control | awk '{print NF}'`
+ncontrols=`wc -l $tmpfile.control | awk '{print $1}'`
 
 if [ $ncontrols -gt 0 ]
 then
