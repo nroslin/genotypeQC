@@ -59,7 +59,7 @@ plink --memory 8000 --bfile $dir/$prefix  --extract  ${tmpfile}.common --exclude
 
 
 # pruning LD 
-plink --memory 8000 --bfile  ${tmpfile}_${prefix} --maf 0.05 --indep-pairwise 1500 100 0.1 --out ${tmpfile}_${prefix}
+plink --memory 8000 --bfile  ${tmpfile}_${prefix} --maf 0.05 --indep-pairwise 1500 100 0.2 --out ${tmpfile}_${prefix}
 plink --memory 8000 --bfile  ${tmpfile}_${prefix} --extract  ${tmpfile}_${prefix}.prune.in --make-bed --out ${tmpfile}_${prefix}_pruned 
 
 
