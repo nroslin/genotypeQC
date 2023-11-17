@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  30 Oct 2023
+# Last modified:  17 Nov 2023
 
 # Make a final table of the QC stats generated per sample.
 
@@ -23,7 +23,8 @@ my $inrem = "${prefix}.remove.txt";   #IDs failing QC
 my $infam = "../../recoded/${prefix}.fam";    #genotyped samples
 my $output = "${prefix}_tableBySample.txt";
 
-my ( %datahash, %sexhash, %infpop, %anchash, %failhash, %reasonhash );
+my ( %datahash, %sexfail, %srsex );
+my ( %infpop, %anchash, %failhash, %reasonhash );
 
 #original clinical sex
 open CLIN, "$inclin" or die "Cannot open file $inclin:  $!";
@@ -31,6 +32,7 @@ while (<CLIN>) {
   chomp;
   my ( $id0, $clinsex ) = split;
   $datahash{$id0} = $clinsex;
+  $srsex{$id0} = $clinsex;   #SR sex, to be compared to inferred sex
 }
 close CLIN;
 
@@ -65,7 +67,21 @@ while (<SEX2>) {
   $datahash{$id2} = join "\t", $datahash{$id2}, $infsex, $sexchr;
 
   #IDs where inferred sex ne pedsex and pedsex not missing/unknown
-  #if ( $pedsex2 != $infsex && $pedsex2 != 0 ) { $sexhash{$id2} += 1; }
+  #(the data in $pedsex2 comes from the genotyping lab and is not accurate)
+  my $selfsex;
+  if ( exists $srsex{$id2} ) {
+	$selfsex = $srsex{$id2};   #sex from self-reported clinical data
+  }
+  elsif ( $id2 !~ /^TAG/ ) {   #non-TAG, assume is NA12878 (female)
+	$selfsex = 2;
+  }
+  else { print "No SR sex for $id2\n"; $selfsex = 0; }
+  if ( $infsex == 0 ) { $sexfail{$id2} = 1; }
+  elsif ( $selfsex == 1 && $infsex == 2 ) { $sexfail{$id2} = 1; }
+  elsif ( $selfsex == 2 && $infsex == 1 ) { $sexfail{$id2} = 1; }
+	#fail if inferred sex is ambiguous
+	#OR if SR sex is 1/2 (don't fail if non-standard response)
+	#AND inferred sex is also known
 }
 close SEX2;
 
@@ -129,7 +145,7 @@ while (<REM>) {
   chomp;
   next if /^FID/;
   my ( $id7, $reason ) = (split)[1,2];
-  if ( $reason =~ /Sex/ ) { $sexhash{$id7} = 1; }
+  if ( $reason =~ /Sex/ ) { $sexfail{$id7} = 1; }
   else {   #failed for reasons other than sex
 	$failhash{$id7} += 1;   #failed QC
 	if ( exists $reasonhash{$id7} ) {
@@ -143,7 +159,6 @@ close REM;
 
 
 #write it out, only for TAG samples
-#### need to include column for sexhash problems
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
 print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tClosestAncestry\tSRancestry\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
 
@@ -153,12 +168,12 @@ while (<FAM>) {
   my ( $fid, $iid ) = (split)[0,1];
   next unless $iid =~ /^TAG/;
   if ( exists $datahash{$iid} ) {
-	$sexhash{$iid} = 0 unless exists $sexhash{$iid};
+	$sexfail{$iid} = 0 unless exists $sexfail{$iid};
 	my $fail = 0;
 	if ( exists $failhash{$iid} ) { $fail = 1; }
 	my $why = "NA";
 	if ( exists $reasonhash{$iid} ) { $why = $reasonhash{$iid}; }
-	print OUT "$fid\t$iid\t$datahash{$iid}\t$sexhash{$iid}\t$anchash{$iid}\t$fail\t$why\n";
+	print OUT "$fid\t$iid\t$datahash{$iid}\t$sexfail{$iid}\t$anchash{$iid}\t$fail\t$why\n";
   }
   else { print "No QC results for $iid\n"; }
 }
