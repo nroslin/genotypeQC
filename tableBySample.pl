@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  17 Nov 2023
+# Last modified:  20 Nov 2023
 
 # Make a final table of the QC stats generated per sample.
 
@@ -76,7 +76,9 @@ while (<SEX2>) {
 	$selfsex = 2;
   }
   else { print "No SR sex for $id2\n"; $selfsex = 0; }
-  if ( $infsex == 0 ) { $sexfail{$id2} = 1; }
+
+  #compare self-reported sex to inferred sex
+  if ( $infsex eq "NA" ) { $sexfail{$id2} = 1; }
   elsif ( $selfsex == 1 && $infsex == 2 ) { $sexfail{$id2} = 1; }
   elsif ( $selfsex == 2 && $infsex == 1 ) { $sexfail{$id2} = 1; }
 	#fail if inferred sex is ambiguous

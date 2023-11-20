@@ -130,10 +130,10 @@ awk 'NR>1 && $6>'$imissrate' {print $1,$2,"IMISS"}' ${prefix}_missing_step2.imis
 R --no-save --args $prefix $imissrate < $scriptdir/qc_missingBySample.r > qc_missingBySample.log
 
 ### report ###
-echo "Sample call rate:  see file ${prefix}_sampleCallRate.pdf" >> $reportfile
-echo "The following samples were removed because of low call rate (missing > $imissrate)" >> $reportfile
 grep IMISS $removefile > _$$_tmp_lowcr
 lines=`wc -l _$$_tmp_lowcr | awk '{print $1}'`
+echo "Sample call rate:  see file ${prefix}_sampleCallRate.pdf" >> $reportfile
+echo "The following $lines samples were removed because of low call rate (missing > $imissrate)" >> $reportfile
 if [ $lines -gt 0 ]
 then
   #cat _$$_tmp_lowcr >> $reportfile
@@ -164,10 +164,10 @@ sed '1,/DEF/d' ${tmpfile}auto.bcfout | sed '1,/DEF/d' | sed '/^SITE/d' | sed 's/
 R --no-save --args ${prefix} $hetbprange < $scriptdir/qc_truehet.r > qc_truehet.log
 
 ### report ###
-echo "Autosomal heterozygosity:  see file ${prefix}_autoHet.pdf" >> $reportfile
-echo "The following samples were removed because of excessive het (> $hetbprange * IQR)" >> $reportfile
 grep HET $removefile > ${tmpfile}highhet
 lines=`wc -l _$$_tmp_highhet | awk '{print $1}'`
+echo "Autosomal heterozygosity:  see file ${prefix}_autoHet.pdf" >> $reportfile
+echo "The following $lines samples were removed because of excessive het (> $hetbprange * IQR)" >> $reportfile
 if [ $lines -gt 0 ]
 then
   cat ${tmpfile}highhet >> $reportfile
