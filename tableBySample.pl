@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  20 Nov 2023
+# Last modified:  22 Nov 2023
 
 # Make a final table of the QC stats generated per sample.
 
@@ -141,22 +141,30 @@ while (<SRA>) {
 close SRA;
 
 ### list of IDs failing QC ###
-#put any sex mismatch in a separate hash from other QC failures
 open REM, "$inrem" or die "Cannot open file $inrem:  $!";
 while (<REM>) {
   chomp;
   next if /^FID/;
   my ( $id7, $reason ) = (split)[1,2];
-  if ( $reason =~ /Sex/ ) { $sexfail{$id7} = 1; }
-  else {   #failed for reasons other than sex
-	$failhash{$id7} += 1;   #failed QC
-	if ( exists $reasonhash{$id7} ) {
-	  $reasonhash{$id7} = join ",", $reasonhash{$id7}, $reason;
-	}
-	else { $reasonhash{$id7} = $reason; }
+  $failhash{$id7} += 1;   #failed QC
+  if ( exists $reasonhash{$id7} ) {
+	$reasonhash{$id7} = join ",", $reasonhash{$id7}, $reason;
   }
+  else { $reasonhash{$id7} = $reason; }
 }
 close REM;
+
+#if failed QC and also has sex or ancestry mismatch, add sex/ancestry to list
+#of reasons
+foreach my $id8 ( keys %failhash ) {
+  print "$id8\n";
+  if ( exists $sexfail{$id8} ) {
+	$reasonhash{$id8} = join ",", $reasonhash{$id8}, "SEX";
+  }
+  if ( exists $anchash{$id8} && $anchash{$id8} == 1 ) {
+	$reasonhash{$id8} = join ",", $reasonhash{$id8}, "ANCESTRY";
+  }   #samples not in %anchash are controls
+}
   
 
 

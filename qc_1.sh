@@ -69,7 +69,7 @@ R --no-save --args $prefix < $scriptdir/qc_sexCheck.r > qc_sexCheck.log
 
 #problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
 #inferred sex
-sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SexCheck"}' >> $mismatchfile
+sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1,$2,"SEX"}' >> $mismatchfile
 
 ### report ###
 echo "Sex check:  see file ${prefix}_sexCheck.txt" >> $reportfile
