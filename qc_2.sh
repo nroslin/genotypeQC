@@ -183,9 +183,10 @@ awk '{print $2}' ${prefix}_mztwins.txt | sort -u > ${tmpfile}.clustid
 rm -rf ${tmpfile}.toRemoveTwins.txt; touch ${tmpfile}.toRemoveTwins.txt
 for clustid in `cat ${tmpfile}.clustid`
 do
-  grep $clustid ${prefix}_mztwins.txt | sed '1d' | awk '{print $1}' | sed 's/_/ /' >> ${tmpfile}.toRemoveTwins.txt
+  grep -w $clustid ${prefix}_mztwins.txt | sed '1d' | awk '{print $1}' | sed 's/_/ /' >> ${tmpfile}.toRemoveTwins.txt
 done
-echo "The following duplicates will be removed from PCA analysis."
+nsamples=`wc -l ${tmpfile}.toRemoveTwins.txt | awk '{print $1}'`
+echo "The following $nsamples duplicates will be removed from PCA analysis."
 echo "They will be reported in ${prefix}.1kgpca.closestAncestry.txt and ${prefix}.1kgpca.outliers.txt with the same information as their twin."
 echo
 cat ${tmpfile}.toRemoveTwins.txt
