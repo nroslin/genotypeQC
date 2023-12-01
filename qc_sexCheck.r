@@ -1,5 +1,5 @@
 # Created 20 January 2022.
-# Last modified:  29 Jun 2023
+# Last modified:  01 Dec 2023
 
 # Make some plots and do some sex inference.
 # Estimate how many of each sex chromosome a person carries (0, 1, 2, 
@@ -78,12 +78,17 @@ segments(0.05, 0.75, 0.05, 1.1, lty=2)
 problem<-x$PedSex==0 | x$PedSex != x$InferredSex | is.na(x$InferredSex)
 plot(x[problem, "ChrXhetRate"], x[problem,"ChrYcr"], main=paste0(infile, ": ",
   sum(problem), " atypical samples"), pch=x[problem,"PedSex"]+1, 
-  col=x[problem,"PedSex"]+1, xlab="ChrX heterozygosity", ylab="ChrY call rate")
+  col=x[problem,"PedSex"]+1, xlab="ChrX heterozygosity", ylab="ChrY call rate",
+  xlim=range(x$ChrXhetRate), ylim=range(x$ChrYcr))
 segments(0.10, 0.4, 0.3, 0.4, lty=2)
 segments(0.10, 0.4, 0.10, -1, lty=2)
 segments(0.3, 0.4, 0.3, -1, lty=2)
 segments(-1, 0.75, 0.05, 0.75, lty=2)
 segments(0.05, 0.75, 0.05, 1.1, lty=2)
+
+mtext(paste(date()), outer=T, side=3, adj=1, line=-1.2, cex=0.7)
+mtext(paste0(system("pwd", intern=T), "/comparePanels.pdf"), outer=T,
+  side=1, adj=0, line=-1, cex=0.7, font=3)
 
 ### two optional plots
 #chrX het vs. chr X call rate
@@ -95,6 +100,10 @@ plot(x$ChrXhetRate, x$ChrXcr, main=paste(infile, ": All samples"), pch=x$PedSex+
 #chrX call rate vs. chrY call rate
 plot(x$ChrXcr, x$ChrYcr, main=paste(infile, ": All samples"), pch=x$PedSex+1, 
   col=x$PedSex+1, xlab="ChrX call rate", ylab="ChrY call rate")
+
+mtext(paste(date()), outer=T, side=3, adj=1, line=-1.2, cex=0.7)
+mtext(paste0(system("pwd", intern=T), "/comparePanels.pdf"), outer=T,
+  side=1, adj=0, line=-1, cex=0.7, font=3)
 }
 
 dev.off()

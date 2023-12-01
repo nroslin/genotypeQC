@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  22 Nov 2023
+# Last modified:  29 Nov 2023
 
 # Make a final table of the QC stats generated per sample.
 
@@ -79,6 +79,7 @@ while (<SEX2>) {
 
   #compare self-reported sex to inferred sex
   if ( $infsex eq "NA" ) { $sexfail{$id2} = 1; }
+  elsif ( $selfsex eq "NA" ) { next; }  #do nothing if SR sex missing
   elsif ( $selfsex == 1 && $infsex == 2 ) { $sexfail{$id2} = 1; }
   elsif ( $selfsex == 2 && $infsex == 1 ) { $sexfail{$id2} = 1; }
 	#fail if inferred sex is ambiguous
@@ -157,7 +158,6 @@ close REM;
 #if failed QC and also has sex or ancestry mismatch, add sex/ancestry to list
 #of reasons
 foreach my $id8 ( keys %failhash ) {
-  print "$id8\n";
   if ( exists $sexfail{$id8} ) {
 	$reasonhash{$id8} = join ",", $reasonhash{$id8}, "SEX";
   }
