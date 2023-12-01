@@ -87,7 +87,7 @@ segments(-1, 0.75, 0.05, 0.75, lty=2)
 segments(0.05, 0.75, 0.05, 1.1, lty=2)
 
 mtext(paste(date()), outer=T, side=3, adj=1, line=-1.2, cex=0.7)
-mtext(paste0(system("pwd", intern=T), "/comparePanels.pdf"), outer=T,
+mtext(paste0(system("pwd", intern=T), "/", infile, "_sexCheck.pdf"), outer=T,
   side=1, adj=0, line=-1, cex=0.7, font=3)
 
 ### two optional plots
@@ -102,7 +102,7 @@ plot(x$ChrXcr, x$ChrYcr, main=paste(infile, ": All samples"), pch=x$PedSex+1,
   col=x$PedSex+1, xlab="ChrX call rate", ylab="ChrY call rate")
 
 mtext(paste(date()), outer=T, side=3, adj=1, line=-1.2, cex=0.7)
-mtext(paste0(system("pwd", intern=T), "/comparePanels.pdf"), outer=T,
+mtext(paste0(system("pwd", intern=T), "/", infile, "_sexCheck.pdf"), outer=T,
   side=1, adj=0, line=-1, cex=0.7, font=3)
 }
 

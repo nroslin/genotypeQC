@@ -24,6 +24,10 @@ if( sum( sel ) > 0 ){
  write.table( df, paste0(prefix, ".remove.txt"), quote=F, col=F, row=F, append=T )
 }
 
+mtext(paste(date()), outer=T, side=3, adj=1, line=-1.2, cex=0.7)
+mtext(paste0(system("pwd", intern=T), "/", prefix, "_autoHet.pdf"), outer=T,
+  side=1, adj=0, line=-1, cex=0.7, font=3)
+
 dev.off()
 
 
