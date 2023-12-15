@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --tmp=8g
+#SBATCH --time=4:00:00
 
 module load plink/1.90b6.21
 module load R/3.5.1
