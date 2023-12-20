@@ -3,11 +3,12 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  29 Nov 2023
+# Last modified:  20 Dec 2023
 
 # Make a final table of the QC stats generated per sample.
 
 my $prefix = $ARGV[0];
+my $batch = $ARGV[1];  #not consistent, so need to read it in
 
 my $inclin = "../../recoded/${prefix}.providedSex.txt";
 	#we will see if this hard-coded file name works
@@ -21,10 +22,11 @@ my $inanc = "${prefix}.1kgpca.closestAncestry.txt";   #pop inference
 my $insr = "${prefix}_SRancestry.txt";   #self-reported ancestry
 my $inrem = "${prefix}.remove.txt";   #IDs failing QC
 my $infam = "../../recoded/${prefix}.fam";    #genotyped samples
+my $inplate = "${prefix}_idsWithPlate.txt";  #plate labels for samples
 my $output = "${prefix}_tableBySample.txt";
 
-my ( %datahash, %sexfail, %srsex );
-my ( %infpop, %anchash, %failhash, %reasonhash );
+my ( %datahash, %sexfail, %srsex, %sranc );
+my ( %anchash, %failhash, %reasonhash );
 
 #original clinical sex
 open CLIN, "$inclin" or die "Cannot open file $inclin:  $!";
@@ -112,15 +114,6 @@ while (<HET>) {
 close HET;
 
 ### ancestry ###
-open ANC, "$inanc" or die "Cannot open file $inanc:  $!";
-while (<ANC>) {
-  chomp;
-  next if /^FID/;
-  my ( $id5, $pop ) = (split)[1,2];
-  $datahash{$id5} = join "\t", $datahash{$id5}, $pop;
-  $infpop{$id5} = $pop;   #inferred pop, to test against SR ancestry
-}
-close ANC;
 
 #self-reported ancestry
 #this info comes from clinical file, so will probably have more IDs than were
@@ -129,17 +122,50 @@ open SRA, "$insr" or die "Cannot open file $insr:  $!";
 while (<SRA>) {
   chomp;
   my ( $id6, $sr ) = split;
-  if ( exists $infpop{$id6} ) {
+  if ( exists $datahash{$id6} ) {
 	$datahash{$id6} = join "\t", $datahash{$id6}, $sr;
-	if ( $sr eq "NA" ) {
-	  print "Warning:  ID $id6 has missing self-reported ancestry\n";
-	  $anchash{$id6} = 0;   #don't call this a mismatch
-	}
-	elsif ( $infpop{$id6} ne $sr ) { $anchash{$id6} = 1; }   #mismatch
-	else { $anchash{$id6} = 0; }
+	$sranc{$id6} = $sr;   #reported ancestry, to test against inferred
   }
+#	if ( $sr eq "NA" ) {
+#	  print "Warning:  ID $id6 has missing self-reported ancestry\n";
+#	  $anchash{$id6} = 0;   #don't call this a mismatch
+#	}
+#	elsif ( $infpop{$id6} ne $sr ) { $anchash{$id6} = 1; }   #mismatch
+#	else { $anchash{$id6} = 0; }
+#  }
 }
 close SRA;
+
+#inferred ancestry
+open ANC, "$inanc" or die "Cannot open file $inanc:  $!";
+while (<ANC>) {
+  chomp;
+  next if /^FID/;
+  my ( $id5, $pop ) = (split)[1,2];
+  $datahash{$id5} = join "\t", $datahash{$id5}, $pop;
+
+  #test reported vs. inferred
+  if ( $id5 !~ /^TAG/ ) { $sranc{$id5} = "EUR"; }   #these should be controls
+  if ( $sranc{$id5} eq "NA" ) {
+	print "Warning:  ID $id5 has missing self-reported ancestry\n";
+	$anchash{$id5} = 0;   #don't call this a mismatch
+  }
+  elsif ( $sranc{$id5} ne $pop ) { $anchash{$id5} = 1; }  #mismatch
+  else { $anchash{$id5} = 0; }
+}
+close ANC;
+
+#### plate and batch labels
+open PL, "$inplate" or die "Cannot open file $inplate:  $!";
+while (<PL>) {
+  chomp;
+  my ( $id9, $plate ) = split;
+  if ( exists $datahash{$id9} ) {
+	$datahash{$id9} = join "\t", $datahash{$id9}, $plate, $batch;
+  }
+  else { print "Warning:  No QC stats for genotyped ID $id9\n"; }
+}
+close PL;
 
 ### list of IDs failing QC ###
 open REM, "$inrem" or die "Cannot open file $inrem:  $!";
@@ -170,7 +196,7 @@ foreach my $id8 ( keys %failhash ) {
 
 #write it out, only for TAG samples
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
-print OUT "FID\tIID\tClinSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tClosestAncestry\tSRancestry\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
+print OUT "family_id\tparticipant_id\tReportedSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tReportedAncestry\tClosestAncestry\tGtPlate\tGtBatch\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
 
 open FAM, "$infam" or die "Cannot open file $infam:  $!";
 while (<FAM>) {
