@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  20 Dec 2023
+# Last modified:  03 Jan 2024
 
 # Make a final table of the QC stats generated per sample.
 
@@ -20,12 +20,13 @@ my $inmiss = "${prefix}_missing_step2.imiss";   #missingness
 my $inhet = "${prefix}_autoHet.txt";   #heterozygosity
 my $inanc = "${prefix}.1kgpca.closestAncestry.txt";   #pop inference
 my $insr = "${prefix}_SRancestry.txt";   #self-reported ancestry
+my $intwin = "${prefix}_mztwins.txt";   #duplicates/mz twins
+my $inplate = "${prefix}_idsWithPlate.txt";  #plate labels for samples
 my $inrem = "${prefix}.remove.txt";   #IDs failing QC
 my $infam = "../../recoded/${prefix}.fam";    #genotyped samples
-my $inplate = "${prefix}_idsWithPlate.txt";  #plate labels for samples
 my $output = "${prefix}_tableBySample.txt";
 
-my ( %datahash, %sexfail, %srsex, %sranc );
+my ( %datahash, %sexfail, %srsex, %sranc, %twinhash );
 my ( %anchash, %failhash, %reasonhash );
 
 #original clinical sex
@@ -155,6 +156,18 @@ while (<ANC>) {
 }
 close ANC;
 
+#### twins/duplicates
+#if twin, print the unique twin label (eg. MZ2_1)
+#not sure if we need to get more specific than this
+open TWIN, "$intwin" or die "Cannot open file $intwin:  $!";
+while (<TWIN>) {
+  chomp;
+  my ( $label, $twinid ) = split;   #label is FID_IID
+  my $id10 = ( split /_/, $label )[1];
+  $twinhash{$id10} = $twinid;
+}
+close TWIN;
+
 #### plate and batch labels
 open PL, "$inplate" or die "Cannot open file $inplate:  $!";
 while (<PL>) {
@@ -168,11 +181,13 @@ while (<PL>) {
 close PL;
 
 ### list of IDs failing QC ###
+#don't list IDs removed because of MZ twin (as reported/expected)
 open REM, "$inrem" or die "Cannot open file $inrem:  $!";
 while (<REM>) {
   chomp;
   next if /^FID/;
   my ( $id7, $reason ) = (split)[1,2];
+  next if $reason eq "TWIN";
   $failhash{$id7} += 1;   #failed QC
   if ( exists $reasonhash{$id7} ) {
 	$reasonhash{$id7} = join ",", $reasonhash{$id7}, $reason;
@@ -196,7 +211,7 @@ foreach my $id8 ( keys %failhash ) {
 
 #write it out, only for TAG samples
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
-print OUT "family_id\tparticipant_id\tReportedSex\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tReportedAncestry\tClosestAncestry\tGtPlate\tGtBatch\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
+print OUT "family_id\tparticipant_id\tsex_raw\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tReportedAncestry\tClosestAncestry\tGtPlate\tGtBatch\tTwin/Duplicate\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
 
 open FAM, "$infam" or die "Cannot open file $infam:  $!";
 while (<FAM>) {
@@ -204,12 +219,13 @@ while (<FAM>) {
   my ( $fid, $iid ) = (split)[0,1];
   next unless $iid =~ /^TAG/;
   if ( exists $datahash{$iid} ) {
+ 	$twinhash{$iid} = 0 unless exists $twinhash{$iid};
 	$sexfail{$iid} = 0 unless exists $sexfail{$iid};
 	my $fail = 0;
 	if ( exists $failhash{$iid} ) { $fail = 1; }
 	my $why = "NA";
 	if ( exists $reasonhash{$iid} ) { $why = $reasonhash{$iid}; }
-	print OUT "$fid\t$iid\t$datahash{$iid}\t$sexfail{$iid}\t$anchash{$iid}\t$fail\t$why\n";
+	print OUT "$fid\t$iid\t$datahash{$iid}\t$twinhash{$iid}\t$sexfail{$iid}\t$anchash{$iid}\t$fail\t$why\n";
   }
   else { print "No QC results for $iid\n"; }
 }
