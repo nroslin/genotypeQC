@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  03 Jan 2024
+# Last modified:  04 Jan 2024
 
 # Make a final table of the QC stats generated per sample.
 
@@ -19,6 +19,7 @@ my $insex2 = "${prefix}_inferredSex.txt";   #inference
 my $inmiss = "${prefix}_missing_step2.imiss";   #missingness
 my $inhet = "${prefix}_autoHet.txt";   #heterozygosity
 my $inanc = "${prefix}.1kgpca.closestAncestry.txt";   #pop inference
+my $inlanc = "${prefix}_likelyAncestry.txt";  #unusual inferred ancestries
 my $insr = "${prefix}_SRancestry.txt";   #self-reported ancestry
 my $intwin = "${prefix}_mztwins.txt";   #duplicates/mz twins
 my $inplate = "${prefix}_idsWithPlate.txt";  #plate labels for samples
@@ -26,7 +27,7 @@ my $inrem = "${prefix}.remove.txt";   #IDs failing QC
 my $infam = "../../recoded/${prefix}.fam";    #genotyped samples
 my $output = "${prefix}_tableBySample.txt";
 
-my ( %datahash, %sexfail, %srsex, %sranc, %twinhash );
+my ( %datahash, %sexfail, %srsex, %sranc, %infanc, %twinhash );
 my ( %anchash, %failhash, %reasonhash );
 
 #original clinical sex
@@ -127,23 +128,36 @@ while (<SRA>) {
 	$datahash{$id6} = join "\t", $datahash{$id6}, $sr;
 	$sranc{$id6} = $sr;   #reported ancestry, to test against inferred
   }
-#	if ( $sr eq "NA" ) {
-#	  print "Warning:  ID $id6 has missing self-reported ancestry\n";
-#	  $anchash{$id6} = 0;   #don't call this a mismatch
-#	}
-#	elsif ( $infpop{$id6} ne $sr ) { $anchash{$id6} = 1; }   #mismatch
-#	else { $anchash{$id6} = 0; }
-#  }
 }
 close SRA;
 
 #inferred ancestry
+## list of exceptions; file might not exist if no exceptions
+if ( -e "$inlanc" ) {
+  open EANC, "$inlanc" or die "Cannot open file $inlanc:  $!";
+  while (<EANC>) { 
+	chomp;
+	next if /^FID/;
+	my ( $id11, $group, $likely ) = (split)[1,2,3];
+	$infanc{$id11} = join "\t", $group, $likely;
+	   #imputation group (EAS/EUR/SAS), likely ancestry (eg. mixed_EAS-SAS)
+  }
+  close EANC;
+}
+
+#information for everyone - need to add the correct info to datahash
 open ANC, "$inanc" or die "Cannot open file $inanc:  $!";
 while (<ANC>) {
   chomp;
   next if /^FID/;
   my ( $id5, $pop ) = (split)[1,2];
-  $datahash{$id5} = join "\t", $datahash{$id5}, $pop;
+  if ( exists $infanc{$id5} ) {   #exceptions
+	$datahash{$id5} = join "\t", $datahash{$id5}, $infanc{$id5};
+	$pop = (split /\t/, $infanc{$id5})[1];
+  }
+  else {  #inferred ancestry = imputation group = closest ancestry
+	$datahash{$id5} = join "\t", $datahash{$id5}, $pop, $pop;
+  }
 
   #test reported vs. inferred
   if ( $id5 !~ /^TAG/ ) { $sranc{$id5} = "EUR"; }   #these should be controls
@@ -211,7 +225,7 @@ foreach my $id8 ( keys %failhash ) {
 
 #write it out, only for TAG samples
 open OUT, ">$output" or die "Cannot write to file $output:  $!";
-print OUT "family_id\tparticipant_id\tsex_raw\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tReportedAncestry\tClosestAncestry\tGtPlate\tGtBatch\tTwin/Duplicate\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
+print OUT "family_id\tparticipant_id\tsex_raw\tXhet\tYcallRate\tGeneticSex\tSexChr\tCallRate\tAutoHet\tReportedAncestry\tImputationGroup\tLikelyAncestry\tGtPlate\tGtBatch\tTwin/Duplicate\tSexMismatch\tAncestryMismatch\tQCfail\tReasons\n";
 
 open FAM, "$infam" or die "Cannot open file $infam:  $!";
 while (<FAM>) {
