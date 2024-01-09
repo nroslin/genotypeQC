@@ -39,7 +39,10 @@ echo "" >> $reportfile
 echo "Sample-specific QC" >> $reportfile
 echo "------------------" >> $reportfile
 echo >> $reportfile
-### report ###
+nsamples=`wc -l $dir/${prefix}.fam  | awk '{print $1}'`
+echo "Initial number of samples:  $nsamples" >> $reportfile
+echo >> $reportfile
+### \report ###
 
 #############
 # SAMPLE QC #
@@ -85,7 +88,7 @@ else
   echo "NONE" >> $reportfile
 fi
 echo "" >> $reportfile
-### report ###
+### \report ###
 
 # THIS NEEDS TO BE REFINED. AWAITING SEX INFO 
 # as of v > 0.2.2 this is commented 
@@ -142,8 +145,8 @@ then
 else
   echo "NONE" >> $reportfile
 fi
-echo "" >> $reportfile
-### report ###
+echo  >> $reportfile
+### \report ###
 
 
 ##########
@@ -179,7 +182,7 @@ echo >> $reportfile
 echo "List of samples removed are in file $removefile" >> $reportfile
 echo >> $reportfile
 echo >> $reportfile
-### report ###
+### \report ###
 
 #############
 # MARKER QC #
@@ -202,10 +205,13 @@ awk 'NR>1 && ( $5>'$lmissrate' ) {print $2,"LMISS"}' ${prefix}_missing_Xmales_st
 echo "SNP-specific QC" >> $reportfile
 echo "---------------" >> $reportfile
 echo >> $reportfile
+nsnps=`wc -l $dir/${prefix}.bim | awk '{print $1}'`
+echo "Initial number of SNPs:  $nsnps" >> $reportfile
+echo >> $reportfile
 lmiss=`grep LMISS $prefix.exclude.txt | wc -l`
 echo "SNP call rate: $lmiss SNPs removed because of low call rate (missing >$lmissrate)" >> $reportfile
 echo >> $reportfile
-### report ###
+### \report ###
 
 
 
