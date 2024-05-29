@@ -3,7 +3,7 @@
 use strict;
 
 # Created 10 July 2023.
-# Last modified:  04 Jan 2024
+# Last modified:  31 Jan 2024
 
 # Make a final table of the QC stats generated per sample.
 
@@ -78,6 +78,13 @@ while (<SEX2>) {
   }
   elsif ( $id2 !~ /^TAG/ ) {   #non-TAG, assume is NA12878 (female)
 	$selfsex = 2;
+  }
+  #there may be some replicates, identified by -R
+  #assign these the same reported sex as their non -R versions
+  elsif ( $id2 =~ /-R$/ ) { 
+	my $sexbase = (split /-/, $id2)[0];  #just the TAG part
+	$srsex{$id2} = $srsex{$sexbase};
+	$selfsex = $srsex{$sexbase};
   }
   else { print "No SR sex for $id2\n"; $selfsex = 0; }
 
@@ -161,6 +168,13 @@ while (<ANC>) {
 
   #test reported vs. inferred
   if ( $id5 !~ /^TAG/ ) { $sranc{$id5} = "EUR"; }   #these should be controls
+  #there may be some replicates, identified by -R
+  #assign these the same reported ancestry as their non -R versions
+  if ( $id5 =~ /-R$/ ) { 
+	my $idbase = (split /-/, $id5)[0];  #just the TAG part
+	$sranc{$id5} = $sranc{$idbase};
+  }
+
   if ( $sranc{$id5} eq "NA" ) {
 	print "Warning:  ID $id5 has missing self-reported ancestry\n";
 	$anchash{$id5} = 0;   #don't call this a mismatch

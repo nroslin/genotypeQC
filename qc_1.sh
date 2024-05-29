@@ -68,7 +68,11 @@ $scriptdir/qc_sexCheck.pl _$$_tmp $dir $prefix
 
 #make some plots and do inference
 R --no-save --args $prefix < $scriptdir/qc_sexCheck.r > qc_sexCheck.log
-  #makes $prefix_inferredSex.txt, $prefix_sexCheck.pdf
+  #makes $prefix_tempSex.txt, $prefix_sexCheck.pdf
+
+#in the R script, inferred unknowns are coded as NA
+#we will convert these back to 0 to make things easier for PLINK
+awk '{$4=="NA" ? $4=0 : $4=$4} {OFS="\t"; print $0}' ${prefix}_tempSex.txt > ${prefix}_inferredSex.txt
 
 #problem samples: inferred sex unknown, OR pedSex not missing and pedSex ne 
 #inferred sex
@@ -76,7 +80,7 @@ sed '1d' ${prefix}_inferredSex.txt | awk '$4==0 || ( $3!=0 && $3!=$4) { print $1
 
 ### report ###
 echo "Sex check:  see file ${prefix}_sexCheck.txt" >> $reportfile
-grep SexCheck $mismatchfile >> _$$_tmp_sexproblem
+grep SEX $mismatchfile >> _$$_tmp_sexproblem
 lines=`wc -l _$$_tmp_sexproblem | awk '{print $1}'`
 echo "The following $lines samples were flagged because of sex inference problems" >> $reportfile
 if [ $lines -gt 0 ]
@@ -277,6 +281,7 @@ echo "List of excluded SNPs in ${prefix}.exclude.txt" >> $reportfile
 
 
 \rm ${tmpfile}* 
+\rm ${prefix}_tempSex.txt
 
 
 

@@ -1,5 +1,5 @@
 # Created 20 January 2022.
-# Last modified:  01 Dec 2023
+# Last modified:  17 May 2024
 
 # Make some plots and do some sex inference.
 # Estimate how many of each sex chromosome a person carries (0, 1, 2, 
@@ -8,7 +8,7 @@
 # Use fixed threshold to establish counts.
 
 infile<-commandArgs(trailingOnly=T)
-outfile<-paste0(infile, "_inferredSex.txt")
+outfile<-paste0(infile, "_tempSex.txt")
 
 
 x<-read.table(paste0(infile, "_sexCheck.txt"), header=T, as.is=T)
